@@ -28,6 +28,9 @@ yarn-error.log*
 # local env files
 .env*.local
 
+# firebaseの機密情報
+.env
+
 # vercel
 .vercel
 
