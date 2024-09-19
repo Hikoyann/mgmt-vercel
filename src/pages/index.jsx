@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, database, provider } from "../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
@@ -6,13 +6,14 @@ import { useAuthState } from "react-firebase-hooks/auth";
 
 function Home() {
   const [user] = useAuthState(auth);
-  // const [json, setJson] = useState([]);
+  const [data, setData] = useState();
 
   const getJson = useCallback(async () => {
     const res = await fetch(
       "https://login-8e441-default-rtdb.firebaseio.com/counter.json"
     );
     const json = await res.json();
+    setData(json);
     console.log(json);
   }, [])
 
@@ -30,6 +31,15 @@ function Home() {
           {user && (
             <div className="t-4 text-center flex flex-col items-center">
               <UserInfo user={user} />
+            </div>
+          )}
+        </div>
+        <div>
+          {data && (
+            <div>
+              <h1>Counter Data</h1>
+              <p>Count: {data.count}</p>
+              <p>Name: {data.name}</p>
             </div>
           )}
         </div>
