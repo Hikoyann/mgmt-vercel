@@ -1,10 +1,24 @@
-import React from "react";
+import React, { useCallback, useEffect } from "react";
 import { signInWithPopup } from "firebase/auth";
-import { auth, provider } from "../lib/firebase";
+import { auth, database, provider } from "../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
+//login-8e441-default-rtdb.firebaseio.com/counter.json
 
 function Home() {
   const [user] = useAuthState(auth);
+  // const [json, setJson] = useState([]);
+
+  const getJson = useCallback(async () => {
+    const res = await fetch(
+      "https://login-8e441-default-rtdb.firebaseio.com/counter.json"
+    );
+    const json = await res.json();
+    console.log(json);
+  }, [])
+
+  useEffect(() => {
+    getJson();
+  }, [getJson])
 
   return (
     <div className="bg-gray-300 min-h-screen">
