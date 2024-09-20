@@ -60,7 +60,6 @@ function Home() {
 
     setForm([...form, inputs]);
     setInputs({ num: "", name: "", equipment: "", purpose: "", returnDate: "" });
-    location.reload();
   };
 
 
