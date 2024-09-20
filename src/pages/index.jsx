@@ -57,10 +57,10 @@ function Home() {
     const equipmentRef = ref(database, "equipments");
     const newEquipmentRef = push(equipmentRef); // 一意のキーを自動生成
     set(newEquipmentRef, inputs)
-    location.reload();
 
     setForm([...form, inputs]);
     setInputs({ num: "", name: "", equipment: "", purpose: "", returnDate: "" });
+    location.reload();
   };
 
 
