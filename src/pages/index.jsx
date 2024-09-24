@@ -6,17 +6,7 @@ import { ref, set, push } from "firebase/database";
 
 function Home() {
   const [user] = useAuthState(auth);
-  const [data, setData] = useState();
   const [mgmts, setMgmt] = useState([]);
-
-  const getJson = useCallback(async () => {
-    const res = await fetch(
-      "https://login-8e441-default-rtdb.firebaseio.com/counter.json"
-    );
-    const json = await res.json();
-    setData(json);
-    console.log(json);
-  }, [])
 
   const getEquipment = useCallback(async () => {
     const res = await fetch(
@@ -28,13 +18,11 @@ function Home() {
       ...json[key],
     }));
     setMgmt(equipmentArray);
-    // console.log(json);
   }, []);
 
   useEffect(() => {
-    getJson();
     getEquipment();
-  }, [getJson, getEquipment]);
+  }, [getEquipment]);
 
   const [inputs, setInputs] = useState({
     num: "",
@@ -76,17 +64,11 @@ function Home() {
             </div>
           )}
         </div>
-        <div>
-          {data && (
-            <div>
-              <h1>Counter Data</h1>
-              <p>Count: {data.count}</p>
-              <p>Name: {data.name}</p>
-            </div>
-          )}
-        </div>
 
         <div>
+          <div>
+            <h1 className="mt-5">借りてる人</h1>
+          </div>
           {mgmts.map((mgmt, index) => {
             return (
               <div key={index} className="mgmt-item">
@@ -102,60 +84,66 @@ function Home() {
         </div>
 
         <div>
-          <h2>備品レンタルフォーム</h2>
-          <form onSubmit={handleSubmit}>
-            <div>
-              <label>番号</label>
-              <input
-                type="number"
-                name="num"
-                value={inputs.num}
-                onChange={handleChange}
-                required
-              />
+          {user ? (
+            <div className="mt-4">
+              <h2>備品レンタルフォーム</h2>
+              <form onSubmit={handleSubmit}>
+                <div>
+                  <label>番号</label>
+                  <input
+                    type="number"
+                    name="num"
+                    value={inputs.num}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>借りる人の名前</label>
+                  <input
+                    type="text"
+                    name="name"
+                    value={inputs.name}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>備品名</label>
+                  <input
+                    type="text"
+                    name="equipment"
+                    value={inputs.equipment}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>使用用途</label>
+                  <input
+                    type="text"
+                    name="purpose"
+                    value={inputs.purpose}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <div>
+                  <label>返却予定日</label>
+                  <input
+                    type="date"
+                    name="returnDate"
+                    value={inputs.returnDate}
+                    onChange={handleChange}
+                    required
+                  />
+                </div>
+                <button type="submit">送信</button>
+              </form>
             </div>
-            <div>
-              <label>借りる人の名前</label>
-              <input
-                type="text"
-                name="name"
-                value={inputs.name}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label>備品名</label>
-              <input
-                type="text"
-                name="equipment"
-                value={inputs.equipment}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label>使用用途</label>
-              <input
-                type="text"
-                name="purpose"
-                value={inputs.purpose}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <div>
-              <label>返却予定日</label>
-              <input
-                type="date"
-                name="returnDate"
-                value={inputs.returnDate}
-                onChange={handleChange}
-                required
-              />
-            </div>
-            <button type="submit">送信</button>
-          </form>
+          ) : (
+            <p>フォームを使用するには、サインインしてください。</p>
+          )}
         </div>
       </div>
     </div>
