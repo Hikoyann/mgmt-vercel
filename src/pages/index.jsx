@@ -62,7 +62,7 @@ function Home() {
   return (
     <div className="bg-gray-300 min-h-screen flex flex-col items-center">
       <div className="">
-        <div className="w-full bg-white flex justify-between p-4 shadow-md">
+        <div className="w-full flex justify-between p-4">
           <a href="#" className="text-blue-600 font-bold">
             備品管理アプリ
           </a>
