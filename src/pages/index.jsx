@@ -61,7 +61,7 @@ function Home() {
 
   return (
     <div className="bg-gray-300 min-h-screen flex flex-col items-center">
-      <div className="">
+      <div>
         <div className="w-full flex justify-between p-4">
           <a href="#" className="text-blue-600 font-bold">
             備品管理アプリ
@@ -72,7 +72,7 @@ function Home() {
             </div>
           )}
         </div>
-        <div className="mt-5">
+        <div className="mt-5 w-full">
           {user && (
             <div className="t-4 text-center flex flex-col items-center">
               <UserInfo user={user} />
@@ -81,8 +81,8 @@ function Home() {
         </div>
 
         <div>
-          <div>
-            <h1 className="mt-5">借りてる人</h1>
+          <div className="w-full">
+            <h1 className="mt-5 text-xl font-bold">借りてる人</h1>
           </div>
           {mgmts.map((mgmt, index) => {
             return (
@@ -99,13 +99,13 @@ function Home() {
           })}
         </div>
 
-        <div>
+        <div className="w-full">
           {user ? (
             <div className="mt-4">
-              <h2>備品レンタルフォーム</h2>
-              <form onSubmit={handleSubmit}>
-                <div>
-                  <label>番号</label>
+              <h2 className="text-lg font-semibold">備品レンタルフォーム</h2>
+              <form onSubmit={handleSubmit} className="mt-2">
+                <div className="mb-4">
+                  <label className="block">番号</label>
                   <input
                     type="number"
                     name="num"
@@ -114,8 +114,8 @@ function Home() {
                     required
                   />
                 </div>
-                <div>
-                  <label>借りる人の名前</label>
+                <div className="mb-4">
+                  <label className="block">借りる人の名前</label>
                   <input
                     type="text"
                     name="name"
@@ -124,8 +124,8 @@ function Home() {
                     required
                   />
                 </div>
-                <div>
-                  <label>備品名</label>
+                <div className="mb-4">
+                  <label className="block">備品名</label>
                   <input
                     type="text"
                     name="equipment"
@@ -134,8 +134,8 @@ function Home() {
                     required
                   />
                 </div>
-                <div>
-                  <label>使用用途</label>
+                <div className="mb-4">
+                  <label className="block">使用用途</label>
                   <input
                     type="text"
                     name="purpose"
@@ -144,8 +144,8 @@ function Home() {
                     required
                   />
                 </div>
-                <div>
-                  <label>返却予定日</label>
+                <div className="mb-4">
+                  <label className="block">返却予定日</label>
                   <input
                     type="date"
                     name="returnDate"
@@ -154,11 +154,15 @@ function Home() {
                     required
                   />
                 </div>
-                <button type="submit">送信</button>
+                <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                  <button type="submit">送信</button>
+                </div>
               </form>
             </div>
           ) : (
-            <div>フォームを使用するには、サインインしてください。</div>
+            <div className="mb-4">
+              フォームを使用するには、サインインしてください。
+            </div>
           )}
         </div>
       </div>
@@ -181,16 +185,7 @@ function SignOutButton() {
 
 function UserInfo({ user }) {
   return (
-    // <div className="userInfo">
-    //   <div className="text-lg">{user.email || "Anonymous User"}</div>
-    // </div>
-    // <div className="userInfo relative">
-    //   <div className="text-lg">{user.email || "Anonymous User"}</div>
-    //   <div className="absolute mt-2 hidden group-hover:block">
-    //     <SignOutButton />
-    //   </div>
-    // </div>
-    <div className="userInfo relative group">
+    <div className="userInfo">
       <div className="text-lg hover:cursor-pointer">
         {user.email || "Anonymous User"}
       </div>
