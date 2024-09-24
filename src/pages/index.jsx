@@ -42,20 +42,35 @@ function Home() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    const equipmentRef = ref(database, "equipments");
-    const newEquipmentRef = push(equipmentRef); // 一意のキーを自動生成
-    set(newEquipmentRef, inputs)
+    if (user) { // ログイン状態を確認
+      const equipmentRef = ref(database, "equipments");
+      const newEquipmentRef = push(equipmentRef);
 
-    setForm([...form, inputs]);
-    setInputs({ num: "", name: "", equipment: "", purpose: "", returnDate: "" });
+      const updatedInputs = {
+        ...inputs,
+        email: user.email,
+      };
+
+      // データベースに送信
+      set(newEquipmentRef, updatedInputs);
+      setForm([...form, updatedInputs]);
+      setInputs({ num: "", name: "", equipment: "", purpose: "", returnDate: "" });
+    }
   };
 
 
   return (
-    <div className="bg-gray-300 min-h-screen">
-      <div className="text-center">
-        <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
-          {user ? <SignOutButton /> : <SignInButton />}
+    <div className="bg-gray-300 min-h-screen flex flex-col items-center">
+      <div className="">
+        <div className="w-full bg-white flex justify-between p-4 shadow-md">
+          <a href="#" className="text-blue-600 font-bold">
+            備品管理アプリ
+          </a>
+          {!user && (
+            <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+              <SignInButton />
+            </div>
+          )}
         </div>
         <div className="mt-5">
           {user && (
@@ -71,13 +86,14 @@ function Home() {
           </div>
           {mgmts.map((mgmt, index) => {
             return (
-              <div key={index} className="mgmt-item">
-                <p>登録順: {index + 1}</p>
-                <p>番号: {mgmt.num}</p>
-                <p>名前: {mgmt.name}</p>
-                <p>備品名: {mgmt.equipment}</p>
-                <p>使用用途: {mgmt.purpose}</p>
-                <p>返却予定日: {mgmt.returnDate}</p>
+              <div key={index} className="mgmt-item mt-4">
+                <div>登録順: {index + 1}</div>
+                <div>番号: {mgmt.num}</div>
+                <div>名前: {mgmt.name}</div>
+                <div>備品名: {mgmt.equipment}</div>
+                <div>使用用途: {mgmt.purpose}</div>
+                <div>返却予定日: {mgmt.returnDate}</div>
+                <div>メールアドレス: {mgmt.email}</div>
               </div>
             );
           })}
@@ -142,7 +158,7 @@ function Home() {
               </form>
             </div>
           ) : (
-            <p>フォームを使用するには、サインインしてください。</p>
+            <div>フォームを使用するには、サインインしてください。</div>
           )}
         </div>
       </div>
@@ -165,13 +181,23 @@ function SignOutButton() {
 
 function UserInfo({ user }) {
   return (
-    <div className="userInfo">
-      <img
-        className="w-24 h-24 rounded-full mb-4"
-        src={user.photoURL || "defaultImage.jpg"}
-        alt="Profile"
-      />
-      <p className="text-lg">{user.displayName || "Anonymous User"}</p>
+    // <div className="userInfo">
+    //   <div className="text-lg">{user.email || "Anonymous User"}</div>
+    // </div>
+    // <div className="userInfo relative">
+    //   <div className="text-lg">{user.email || "Anonymous User"}</div>
+    //   <div className="absolute mt-2 hidden group-hover:block">
+    //     <SignOutButton />
+    //   </div>
+    // </div>
+    <div className="userInfo relative group">
+      <div className="text-lg hover:cursor-pointer">
+        {user.email || "Anonymous User"}
+      </div>
+      {/* メールアドレスをホバーしたときにサインアウトボタンを表示 */}
+      <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+        <SignOutButton />
+      </div>
     </div>
   );
 }
