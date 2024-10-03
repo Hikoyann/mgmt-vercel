@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, database, provider } from "../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { ref, set, push } from "firebase/database";
+import { ref, get, set, push } from "firebase/database";
 
 function Home() {
   const [user] = useAuthState(auth);
@@ -68,15 +68,21 @@ function Home() {
     setInputs_2({ ...inputs_2, [name]: value });
   };
 
-  const handleSubmit_2 = (e) => {
+  const handleSubmit_2 = async (e) => {
     e.preventDefault();
 
     if (user) {
       // 別のパスを指定 (例えば 'equipmentRegistry')
       const inventoryRef = ref(database, "equipmentRegistry");
+      const snapshot = await get(inventoryRef);
+
+      // 2. データの総数を取得して、新しい番号を決定
+      const equipmentCount = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
+      const newEquipmentNum = equipmentCount + 1;
       const newInventoryRef = push(inventoryRef);
 
       const updatedInputs = {
+        num: newEquipmentNum,
         equipmentName: inputs_2.equipmentName,
         equipmentDetails: inputs_2.equipmentDetails,
         addedDate: new Date().toISOString(), // 追加の日付
@@ -84,10 +90,10 @@ function Home() {
       };
 
       // Firebaseデータベースの別のパスに送信
-      set(newInventoryRef, updatedInputs);
+      await set(newInventoryRef, updatedInputs);
 
       // フォームのリセット
-      setInputs({ equipmentName: "", equipmentDetails: "" });
+      setInputs_2({ equipmentName: "", equipmentDetails: "" });
     }
   };
 
@@ -209,7 +215,7 @@ function Home() {
                 <input
                   type="text"
                   name="equipmentName"
-                  value={inputs.equipmentName}
+                  value={inputs_2.equipmentName}
                   onChange={handleChange_2}
                   required
                 />
@@ -219,7 +225,7 @@ function Home() {
                 <input
                   type="text"
                   name="equipmentDetails"
-                  value={inputs.equipmentDetails}
+                  value={inputs_2.equipmentDetails}
                   onChange={handleChange_2}
                   required
                 />
