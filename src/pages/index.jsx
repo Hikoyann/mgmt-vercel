@@ -3,6 +3,10 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, database, provider } from "../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { ref, get, set, push } from "firebase/database";
+// import { QRCode } from 'qrcode.react';
+import QRCodeLib from "qrcode";
+
+
 
 function Home() {
   const [user] = useAuthState(auth);
@@ -47,7 +51,8 @@ function Home() {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    if (user) { // ログイン状態を確認
+    if (user) {
+      // ログイン状態を確認
       const equipmentRef = ref(database, "equipments");
       const newEquipmentRef = push(equipmentRef);
 
@@ -59,7 +64,13 @@ function Home() {
       // データベースに送信
       set(newEquipmentRef, updatedInputs);
       setForm([...form, updatedInputs]);
-      setInputs({ num: "", name: "", equipment: "", purpose: "", returnDate: "" });
+      setInputs({
+        num: "",
+        name: "",
+        equipment: "",
+        purpose: "",
+        returnDate: "",
+      });
     }
   };
 
@@ -72,19 +83,49 @@ function Home() {
     e.preventDefault();
 
     if (user) {
-      // 別のパスを指定 (例えば 'equipmentRegistry')
       const inventoryRef = ref(database, "equipmentRegistry");
       const snapshot = await get(inventoryRef);
 
       // 2. データの総数を取得して、新しい番号を決定
-      const equipmentCount = snapshot.exists() ? Object.keys(snapshot.val()).length : 0;
-      const newEquipmentNum = equipmentCount + 1;
+      // 既存のデータから最大の番号を取得
+      let maxEquipmentNum = 0;
+      if (snapshot.exists()) {
+        const existingData = snapshot.val();
+        for (const key in existingData) {
+          const equipmentNum = existingData[key].num; // 既存の番号
+          if (equipmentNum > maxEquipmentNum) {
+            maxEquipmentNum = equipmentNum;
+          }
+        }
+      }
+
+      const newEquipmentNum = maxEquipmentNum + 1;
       const newInventoryRef = push(inventoryRef);
+
+      // const qrData = {
+      //   id: newEquipmentNum,
+      //   equipmentName: inputs_2.equipmentName,
+      //   equipmentDetails: inputs_2.equipmentDetails,
+      //   email: user.email,
+      //   addedDate: new Date().toISOString(),
+      // };
+
+      // QRコードを生成し、データURLを取得
+      // const qrCodeDataUrl = await QRCodeLib.toDataURL(JSON.stringify(qrData));
+
+      // Firebaseのデータにアクセスするためのリンク
+      // const qrDataUrl = `https://login-8e441-default-rtdb.firebaseio.com/equipmentRegistry/${newEquipmentNum}`; // 適切なリンクに置き換えてください
+      const qrDataUrl = `https://mgmt-vercel.vercel.app/`;
+      // const qrDataUrl = `https://mgmt-vercel.vercel.app/${newEquipmentNum}`;
+
+      // QRコードを生成
+      const qrCodeDataUrl = await QRCodeLib.toDataURL(qrDataUrl);
 
       const updatedInputs = {
         num: newEquipmentNum,
         equipmentName: inputs_2.equipmentName,
         equipmentDetails: inputs_2.equipmentDetails,
+        qrCode: qrCodeDataUrl,
         addedDate: new Date().toISOString(), // 追加の日付
         email: user.email, // 登録したメールアドレス
       };
@@ -96,7 +137,6 @@ function Home() {
       setInputs_2({ equipmentName: "", equipmentDetails: "" });
     }
   };
-
 
 
   return (
