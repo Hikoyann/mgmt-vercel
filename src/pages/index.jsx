@@ -100,7 +100,7 @@ function Home() {
       }
 
       const newEquipmentNum = maxEquipmentNum + 1;
-      const newInventoryRef = push(inventoryRef);
+      // const newInventoryRef = push(inventoryRef);
 
       // const qrData = {
       //   id: newEquipmentNum,
@@ -131,7 +131,10 @@ function Home() {
       };
 
       // Firebaseデータベースの別のパスに送信
-      await set(newInventoryRef, updatedInputs);
+      await set(
+        ref(database, `equipmentRegistry/${newEquipmentNum}`),
+        updatedInputs
+      );
 
       // フォームのリセット
       setInputs_2({ equipmentName: "", equipmentDetails: "" });
