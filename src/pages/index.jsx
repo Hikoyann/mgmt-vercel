@@ -32,6 +32,11 @@ function Home() {
     returnDate: "",
   });
 
+  const [inputs_2, setInputs_2] = useState({
+    equipmentName: "",
+    equipmentDetails: "",
+  });
+
   const [form, setForm] = useState([]);
 
   const handleChange = (e) => {
@@ -57,6 +62,35 @@ function Home() {
       setInputs({ num: "", name: "", equipment: "", purpose: "", returnDate: "" });
     }
   };
+
+  const handleChange_2 = (e) => {
+    const { name, value } = e.target;
+    setInputs_2({ ...inputs_2, [name]: value });
+  };
+
+  const handleSubmit_2 = (e) => {
+    e.preventDefault();
+
+    if (user) {
+      // 別のパスを指定 (例えば 'equipmentRegistry')
+      const inventoryRef = ref(database, "equipmentRegistry");
+      const newInventoryRef = push(inventoryRef);
+
+      const updatedInputs = {
+        equipmentName: inputs_2.equipmentName,
+        equipmentDetails: inputs_2.equipmentDetails,
+        addedDate: new Date().toISOString(), // 追加の日付
+        email: user.email, // 登録したメールアドレス
+      };
+
+      // Firebaseデータベースの別のパスに送信
+      set(newInventoryRef, updatedInputs);
+
+      // フォームのリセット
+      setInputs({ equipmentName: "", equipmentDetails: "" });
+    }
+  };
+
 
 
   return (
@@ -163,6 +197,41 @@ function Home() {
             <div className="mb-4">
               フォームを使用するには、サインインしてください。
             </div>
+          )}
+        </div>
+
+        <div className="equipment-form">
+          <h2>備品登録フォーム</h2>
+          {user ? (
+            <form onSubmit={handleSubmit_2}>
+              <div className="mb-4">
+                <label>備品名</label>
+                <input
+                  type="text"
+                  name="equipmentName"
+                  value={inputs.equipmentName}
+                  onChange={handleChange_2}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label>備品の詳細</label>
+                <input
+                  type="text"
+                  name="equipmentDetails"
+                  value={inputs.equipmentDetails}
+                  onChange={handleChange_2}
+                  required
+                />
+              </div>
+              <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                <button type="submit" className="submit-button">
+                  送信
+                </button>
+              </div>
+            </form>
+          ) : (
+            <p>サインインしてください。</p>
           )}
         </div>
       </div>
