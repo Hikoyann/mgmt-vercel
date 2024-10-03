@@ -201,43 +201,47 @@ function Home() {
             </div>
           ) : (
             <div className="mb-4">
-              フォームを使用するには、サインインしてください。
+              レンタルフォームを使用するには、サインインしてください。
             </div>
           )}
         </div>
 
-        <div className="equipment-form">
-          <h2>備品登録フォーム</h2>
+        <div className="w-full">
           {user ? (
-            <form onSubmit={handleSubmit_2}>
-              <div className="mb-4">
-                <label>備品名</label>
-                <input
-                  type="text"
-                  name="equipmentName"
-                  value={inputs_2.equipmentName}
-                  onChange={handleChange_2}
-                  required
-                />
-              </div>
-              <div className="mb-4">
-                <label>備品の詳細</label>
-                <input
-                  type="text"
-                  name="equipmentDetails"
-                  value={inputs_2.equipmentDetails}
-                  onChange={handleChange_2}
-                  required
-                />
-              </div>
-              <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
-                <button type="submit" className="submit-button">
-                  送信
-                </button>
-              </div>
-            </form>
+            <div className="mt-4">
+              <h2 className="text-lg font-semibold">備品登録フォーム</h2>
+              <form onSubmit={handleSubmit_2}>
+                <div className="mb-4">
+                  <label>備品名</label>
+                  <input
+                    type="text"
+                    name="equipmentName"
+                    value={inputs_2.equipmentName}
+                    onChange={handleChange_2}
+                    required
+                  />
+                </div>
+                <div className="mb-4">
+                  <label>備品の詳細</label>
+                  <input
+                    type="text"
+                    name="equipmentDetails"
+                    value={inputs_2.equipmentDetails}
+                    onChange={handleChange_2}
+                    required
+                  />
+                </div>
+                <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                  <button type="submit" className="submit-button">
+                    送信
+                  </button>
+                </div>
+              </form>
+            </div>
           ) : (
-            <p>サインインしてください。</p>
+            <div className="mb-4">
+              登録フォームを使用するには、サインインしてください。
+            </div>
           )}
         </div>
       </div>
