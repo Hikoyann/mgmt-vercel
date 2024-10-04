@@ -84,7 +84,7 @@ const ID = ({ mgmt }) => {
           <div>登録した日付: {formatDate(mgmt.addedDate)}</div>
         </div>
 
-        <div className="w-full">
+        <div>
           {user ? (
             <div className="mt-4">
               <h2 className="text-lg font-semibold">備品レンタルフォーム</h2>
