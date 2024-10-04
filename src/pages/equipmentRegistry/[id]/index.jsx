@@ -6,6 +6,7 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { ref, get, set, push } from "firebase/database";
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
+import { Header } from "@/components/Header";
 
 export const getServerSideProps = async (ctx) => {
   const { id } = ctx.query;
@@ -75,7 +76,8 @@ const ID = ({ mgmt }) => {
       <Head>
         <title>{mgmt.equipmentName} - 備品レンタル情報</title>
       </Head>
-      <div className="bg-gray-300 min-h-screen flex flex-col items-center">
+      <div>
+        <Header />
         <div>
           <h1>備品情報</h1>
           <div>番号: {mgmt.num}</div>

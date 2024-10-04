@@ -5,13 +5,8 @@ import { useAuthState } from "react-firebase-hooks/auth";
 import { ref, get, set, push } from "firebase/database";
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
-import { Header } from "@/components/Header";
-import { Mgmt } from "@/components/Mgmt";
-import { Register } from "@/components/Register";
 
-
-
-function Home() {
+export function Register() {
   const [user] = useAuthState(auth);
 
   const [inputs_2, setInputs_2] = useState({
@@ -71,14 +66,47 @@ function Home() {
     }
   };
 
-
   return (
     <div>
-      <Header />
-      <Mgmt />
-      <Register />
+
+      <div className="w-full">
+        {user ? (
+          <div className="mt-4">
+            <h2 className="text-lg font-semibold">備品登録フォーム</h2>
+            <form onSubmit={handleSubmit_2}>
+              <div className="mb-4">
+                <label>備品名</label>
+                <input
+                  type="text"
+                  name="equipmentName"
+                  value={inputs_2.equipmentName}
+                  onChange={handleChange_2}
+                  required
+                />
+              </div>
+              <div className="mb-4">
+                <label>備品の詳細</label>
+                <input
+                  type="text"
+                  name="equipmentDetails"
+                  value={inputs_2.equipmentDetails}
+                  onChange={handleChange_2}
+                  required
+                />
+              </div>
+              <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                <button type="submit" className="submit-button">
+                  送信
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          <div className="mb-4">
+            登録フォームを使用するには、サインインしてください。
+          </div>
+        )}
+      </div>
     </div>
   );
 }
-
-export default Home;
