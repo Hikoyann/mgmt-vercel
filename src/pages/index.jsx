@@ -115,7 +115,7 @@ function Home() {
 
       // Firebaseのデータにアクセスするためのリンク
       // const qrDataUrl = `https://login-8e441-default-rtdb.firebaseio.com/equipmentRegistry/${newEquipmentNum}`; // 適切なリンクに置き換えてください
-      const qrDataUrl = `https://mgmt-vercel.vercel.app/`;
+      const qrDataUrl = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}`;
       // const qrDataUrl = `https://mgmt-vercel.vercel.app/${newEquipmentNum}`;
 
       // QRコードを生成
