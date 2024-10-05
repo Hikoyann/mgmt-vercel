@@ -14,7 +14,10 @@ export function Header() {
       <div className="w-full p-4 flex justify-between items-center">
         {/* 備品管理アプリのタイトル */}
         <div>
-          <a href="#" className="text-blue-600 text-xl font-bold">
+          <a
+            href="https://mgmt-vercel.vercel.app/"
+            className="text-blue-600 text-xl font-bold"
+          >
             備品管理アプリ
           </a>
         </div>
@@ -67,10 +70,18 @@ function UserInfo({ user }) {
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
     >
-      <div className="text-lg hover:cursor-pointer">設定</div>
+      <div className="text-lg hover:cursor-pointer ">設定</div>
       {/* ホバー中にサインアウトメニューを表示 */}
       {isHovered && (
-        <div className="absolute right-0 mt-2 w-48 bg-white p-2 shadow-lg rounded-md z-10">
+        <div
+          className="absolute right-0 mt-2 w-48 bg-white p-2 shadow-lg rounded-md z-10"
+          onMouseEnter={handleMouseEnter}
+          onMouseLeave={handleMouseLeave}
+          style={{
+            marginTop: "0", // 隙間をなくすための調整
+            top: "100%", // 設定ボタンにメニューをぴったりくっつける
+          }}
+        >
           {/* メールアドレスの表示 */}
           <div className="text-gray-700">{user.email || "Anonymous User"}</div>
           <div className="mt-2">
