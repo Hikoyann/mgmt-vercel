@@ -11,7 +11,7 @@ export function Header() {
 
   return (
     <div>
-      <div className="w-full p-4 flex justify-between items-center bg-white shadow-md min-h-[80px]">
+      <div className="w-full p-4 flex justify-between items-center">
         {/* 備品管理アプリのタイトル */}
         <div>
           <a href="#" className="text-blue-600 text-xl font-bold">
