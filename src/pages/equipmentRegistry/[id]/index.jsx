@@ -33,7 +33,6 @@ const ID = ({ mgmt }) => {
   const [inputs, setInputs] = useState({
     num: "",
     name: "",
-    equipment: "",
     purpose: "",
     returnDate: "",
   });
@@ -55,6 +54,7 @@ const ID = ({ mgmt }) => {
 
       const updatedInputs = {
         ...inputs,
+        equipment: mgmt.equipmentName,
         email: user.email,
       };
 
@@ -64,7 +64,6 @@ const ID = ({ mgmt }) => {
       setInputs({
         num: "",
         name: "",
-        equipment: "",
         purpose: "",
         returnDate: "",
       });
@@ -80,9 +79,9 @@ const ID = ({ mgmt }) => {
         <Header />
         <div>
           <h1>備品情報</h1>
-          <div>番号: {mgmt.num}</div>
+          <div>備品番号: {mgmt.num}</div>
           <div>備品名: {mgmt.equipmentName}</div>
-          <div>使用用途: {mgmt.equipmentDetails}</div>
+          <div>備品情報: {mgmt.equipmentDetails}</div>
           <div>登録した日付: {formatDate(mgmt.addedDate)}</div>
         </div>
 
@@ -107,16 +106,6 @@ const ID = ({ mgmt }) => {
                     type="text"
                     name="name"
                     value={inputs.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block">備品名</label>
-                  <input
-                    type="text"
-                    name="equipment"
-                    value={inputs.equipment}
                     onChange={handleChange}
                     required
                   />

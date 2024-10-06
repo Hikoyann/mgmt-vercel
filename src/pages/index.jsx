@@ -12,65 +12,6 @@ import { Register } from "@/components/Register";
 
 
 function Home() {
-  const [user] = useAuthState(auth);
-
-  const [inputs_2, setInputs_2] = useState({
-    equipmentName: "",
-    equipmentDetails: "",
-  });
-
-  const handleChange_2 = (e) => {
-    const { name, value } = e.target;
-    setInputs_2({ ...inputs_2, [name]: value });
-  };
-
-  const handleSubmit_2 = async (e) => {
-    e.preventDefault();
-
-    if (user) {
-      const inventoryRef = ref(database, "equipmentRegistry");
-      const snapshot = await get(inventoryRef);
-
-      // 2. データの総数を取得して、新しい番号を決定
-      // 既存のデータから最大の番号を取得
-      let maxEquipmentNum = 0;
-      if (snapshot.exists()) {
-        const existingData = snapshot.val();
-        for (const key in existingData) {
-          const equipmentNum = existingData[key].num; // 既存の番号
-          if (equipmentNum > maxEquipmentNum) {
-            maxEquipmentNum = equipmentNum;
-          }
-        }
-      }
-
-      const newEquipmentNum = maxEquipmentNum + 1;
-      // const newInventoryRef = push(inventoryRef);
-      const qrDataUrl = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}`;
-
-      // QRコードを生成
-      const qrCodeDataUrl = await QRCodeLib.toDataURL(qrDataUrl);
-
-      const updatedInputs = {
-        num: newEquipmentNum,
-        equipmentName: inputs_2.equipmentName,
-        equipmentDetails: inputs_2.equipmentDetails,
-        qrCode: qrCodeDataUrl,
-        addedDate: new Date().toISOString(), // 追加の日付
-        email: user.email, // 登録したメールアドレス
-      };
-
-      // Firebaseデータベースの別のパスに送信
-      await set(
-        ref(database, `equipmentRegistry/${newEquipmentNum}`),
-        updatedInputs
-      );
-
-      // フォームのリセット
-      setInputs_2({ equipmentName: "", equipmentDetails: "" });
-    }
-  };
-
 
   return (
     <div>
