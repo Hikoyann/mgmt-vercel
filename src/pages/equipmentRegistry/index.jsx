@@ -10,12 +10,14 @@ import { Header } from "@/components/Header";
 
 const Posts = () => {
   return (
-    <div>
+    <>
       <Head>
         <title>備品一覧 Page</title>
       </Head>
-      <Header />
-    </div>
+      <div>
+        <Header />
+      </div>
+    </>
   );
 };
 
