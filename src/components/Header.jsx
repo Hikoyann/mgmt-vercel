@@ -15,7 +15,7 @@ export function Header() {
         {/* 備品管理アプリのタイトル */}
         <div>
           <a
-            href="https://mgmt-vercel.vercel.app/"
+            href="/"
             className="text-blue-600 text-xl font-bold"
           >
             備品管理アプリ
@@ -84,6 +84,14 @@ function UserInfo({ user }) {
         >
           {/* メールアドレスの表示 */}
           <div className="text-gray-700">{user.email || "Anonymous User"}</div>
+          <div className="mt-2">
+            <a
+              href="/equipmentRegistry" // 備品一覧のURLを指定
+              className="hover:underline hover:text-blue-600 text-gray-800"
+            >
+              備品一覧
+            </a>
+          </div>
           <div className="mt-2">
             <SignOutButton />
           </div>

@@ -12,7 +12,6 @@ import { Register } from "@/components/Register";
 
 
 function Home() {
-
   return (
     <div>
       <Header />
