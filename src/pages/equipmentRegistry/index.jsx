@@ -7,6 +7,7 @@ import { ref, get, set, push } from "firebase/database";
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
 import { Header } from "@/components/Header";
+import { Equipment } from "@/components/Equipment";
 
 const Posts = () => {
   return (
@@ -16,6 +17,7 @@ const Posts = () => {
       </Head>
       <div>
         <Header />
+        <Equipment />
       </div>
     </>
   );
