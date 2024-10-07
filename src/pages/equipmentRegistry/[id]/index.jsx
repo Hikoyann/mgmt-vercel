@@ -10,7 +10,7 @@ import { Header } from "@/components/Header";
 
 export const getServerSideProps = async (ctx) => {
   const { id } = ctx.query;
-  const USER_API_URL = `https://login-8e441-default-rtdb.firebaseio.com/equipmentRegistry/${id}.json`;
+  const USER_API_URL = `https://login-8e441-default-rtdb.firebaseio.com/equipmentRegistry/${id}`;
   const user = await fetch(USER_API_URL);
   const userData = await user.json();
 
