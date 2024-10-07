@@ -37,32 +37,33 @@ export function Equipment() {
       <div className="w-full">
         <h1 className="mt-5 text-xl font-bold">備品一覧</h1>
       </div>
-      {mgmts.map((mgmt, index) => {
-        return (
-          <div key={index} className="mgmt-item mt-4 border p-4 rounded">
-            <div>登録順: {index + 1}</div>
-            <div>備品番号: {mgmt.num}</div>
-            <div>備品名: {mgmt.equipmentName}</div>
-            <div>備品情報: {mgmt.equipmentDetails}</div>
-            <div>メールアドレス: {mgmt.email}</div>
-            <div>登録日: {formatDate(mgmt.addedDate)}</div>
-            <div className="mt-4">
-              <h2>QRコード:</h2>
-              {mgmt.qrCode ? (
-                <div>
-                  <img
-                    src={mgmt.qrCode}
-                    alt="QRコード"
-                    style={{ width: "128px", height: "128px" }}
-                  />
-                </div>
-              ) : (
-                <div>QRコードが見つかりません</div>
-              )}
+      {mgmts.length > 0 && // データがある場合のみ表示
+        mgmts.map((mgmt, index) => {
+          return (
+            <div key={index} className="mgmt-item mt-4 border p-4 rounded">
+              <div>登録順: {index + 1}</div>
+              <div>備品番号: {mgmt.num}</div>
+              <div>備品名: {mgmt.equipmentName}</div>
+              <div>備品情報: {mgmt.equipmentDetails}</div>
+              <div>メールアドレス: {mgmt.email}</div>
+              <div>登録日: {formatDate(mgmt.addedDate)}</div>
+              <div className="mt-4">
+                <h2>QRコード:</h2>
+                {mgmt.qrCode ? (
+                  <div>
+                    <img
+                      src={mgmt.qrCode}
+                      alt="QRコード"
+                      style={{ width: "128px", height: "128px" }}
+                    />
+                  </div>
+                ) : (
+                  <div>QRコードが見つかりません</div>
+                )}
+              </div>
             </div>
-          </div>
-        );
-      })}
+          );
+        })}
     </div>
   );
 };
