@@ -37,8 +37,9 @@ export function Equipment() {
       <div className="w-full">
         <h1 className="mt-5 text-xl font-bold">備品一覧</h1>
       </div>
-      {mgmts.length > 0 && // データがある場合のみ表示
-        mgmts.map((mgmt, index) => {
+      {mgmts
+        .filter((mgmt) => mgmt.num) // 備品番号があるものだけをフィルタリング
+        .map((mgmt, index) => {
           return (
             <div key={index} className="mgmt-item mt-4 border p-4 rounded">
               <div>登録順: {index + 1}</div>
@@ -63,7 +64,8 @@ export function Equipment() {
               </div>
             </div>
           );
-        })}
+        })
+      }
     </div>
   );
 };
