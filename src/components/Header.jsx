@@ -97,7 +97,7 @@ function UserInfo({ user }) {
               href="/equipment" // 備品一覧のURLを指定
               className="hover:underline hover:text-blue-600 text-gray-800"
             >
-              備品レンタルフォーム
+              備品登録フォーム
             </a>
           </div>
           <div className="mt-2">
