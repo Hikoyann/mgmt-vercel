@@ -14,14 +14,19 @@ export const getServerSideProps = async (ctx) => {
   const user = await fetch(USER_API_URL);
   const userData = await user.json();
 
+  const EQUIPMENTS_API_URL = `https://login-8e441-default-rtdb.firebaseio.com/equipments.json`;
+  const user_e = await fetch(EQUIPMENTS_API_URL);
+  const equipmentsData = await user_e.json();
+
   return {
     props: {
       mgmt: userData, // コンポーネントにデータを渡す
+      _equipments: equipmentsData,
     },
   };
 };
 
-const ID = ({ mgmt }) => {
+const ID = ({ mgmt, _equipments }) => {
   // 日付フォーマット関数
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -43,6 +48,7 @@ const ID = ({ mgmt }) => {
     const { name, value } = e.target;
     setInputs({ ...inputs, [name]: value });
   };
+
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -88,57 +94,68 @@ const ID = ({ mgmt }) => {
 
         <div>
           {user ? (
-            <div className="mt-4">
-              <h2 className="text-lg font-semibold">備品レンタルフォーム</h2>
-              <form onSubmit={handleSubmit} className="mt-2">
-                <div className="mb-4">
-                  <label className="block">番号</label>
-                  <input
-                    type="number"
-                    name="num"
-                    value={inputs.num}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block">借りる人の名前</label>
-                  <input
-                    type="text"
-                    name="name"
-                    value={inputs.name}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block">使用用途</label>
-                  <input
-                    type="text"
-                    name="purpose"
-                    value={inputs.purpose}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="mb-4">
-                  <label className="block">返却予定日</label>
-                  <input
-                    type="date"
-                    name="returnDate"
-                    value={inputs.returnDate}
-                    onChange={handleChange}
-                    required
-                  />
-                </div>
-                <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
-                  <button type="submit">送信</button>
-                </div>
-              </form>
-            </div>
+            !Object.values(_equipments).some(
+              (equipment) =>
+                String(equipment.equipmentNum) === String(mgmt.num)
+            ) ? (
+              <div className="mt-4">
+                <h2 className="text-lg font-semibold">
+                  備品レンタルフォーム
+                </h2>
+                <form onSubmit={handleSubmit} className="mt-2">
+                  <div className="mb-4">
+                    <label className="block">番号</label>
+                    <input
+                      type="number"
+                      name="num"
+                      value={inputs.num}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block">借りる人の名前</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={inputs.name}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block">使用用途</label>
+                    <input
+                      type="text"
+                      name="purpose"
+                      value={inputs.purpose}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="mb-4">
+                    <label className="block">返却予定日</label>
+                    <input
+                      type="date"
+                      name="returnDate"
+                      value={inputs.returnDate}
+                      onChange={handleChange}
+                      required
+                    />
+                  </div>
+                  <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                    <button type="submit">送信</button>
+                  </div>
+                </form>
+              </div>
+            ) : (
+              <div className="mb-4">
+                この備品は既に借りられているため、レンタルフォームは表示できません。
+              </div>
+            )
           ) : (
             <div className="mb-4">
-              レンタルフォームを使用するには、サインインしてください。
+              サインインをしていないため、レンタルフォームは表示できません。
             </div>
           )}
         </div>
