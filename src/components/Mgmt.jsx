@@ -37,7 +37,7 @@ export function Mgmt() {
             <div>登録順: {index + 1}</div>
             <div>番号: {mgmt.num}</div>
             <div>名前: {mgmt.name}</div>
-            <div>備品名: {mgmt.equipment}</div>
+            <div>備品名: {mgmt.equipmentName}</div>
             <div>使用用途: {mgmt.purpose}</div>
             <div>返却予定日: {mgmt.returnDate}</div>
             <div>メールアドレス: {mgmt.email}</div>
