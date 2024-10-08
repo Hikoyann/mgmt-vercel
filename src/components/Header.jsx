@@ -93,6 +93,14 @@ function UserInfo({ user }) {
             </a>
           </div>
           <div className="mt-2">
+            <a
+              href="/equipment" // 備品一覧のURLを指定
+              className="hover:underline hover:text-blue-600 text-gray-800"
+            >
+              備品レンタルフォーム
+            </a>
+          </div>
+          <div className="mt-2">
             <SignOutButton />
           </div>
         </div>
