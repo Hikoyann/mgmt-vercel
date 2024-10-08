@@ -54,7 +54,8 @@ const ID = ({ mgmt }) => {
 
       const updatedInputs = {
         ...inputs,
-        equipment: mgmt.equipmentName,
+        equipmentNum: mgmt.num,
+        equipmentName: mgmt.equipmentName,
         email: user.email,
       };
 
