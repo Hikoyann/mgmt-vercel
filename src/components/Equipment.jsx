@@ -10,6 +10,7 @@ import QRCode from "qrcode.react";
 
 export function Equipment() {
   const [mgmts, setMgmt] = useState([]);
+  const [user] = useAuthState(auth);
 
   const getEquipment = useCallback(async () => {
     const res = await fetch(
@@ -37,35 +38,49 @@ export function Equipment() {
       <div className="w-full">
         <h1 className="mt-5 text-xl font-bold">備品一覧</h1>
       </div>
-      {mgmts
-        .filter((mgmt) => mgmt.num) // 備品番号があるものだけをフィルタリング
-        .map((mgmt, index) => {
-          return (
-            <div key={index} className="mgmt-item mt-4 border p-4 rounded">
-              <div>登録順: {index + 1}</div>
-              <div>備品番号: {mgmt.num}</div>
-              <div>備品名: {mgmt.equipmentName}</div>
-              <div>備品情報: {mgmt.equipmentDetails}</div>
-              <div>メールアドレス: {mgmt.email}</div>
-              <div>登録日: {formatDate(mgmt.addedDate)}</div>
-              <div className="mt-4">
-                <h2>QRコード:</h2>
-                {mgmt.qrCode ? (
-                  <div>
-                    <img
-                      src={mgmt.qrCode}
-                      alt="QRコード"
-                      style={{ width: "128px", height: "128px" }}
-                    />
+      {user ? (
+        <div>
+          {mgmts
+            .filter((mgmt) => mgmt.num) // 備品番号があるものだけをフィルタリング
+            .map((mgmt, index) => {
+              return (
+                <div key={index} className="mgmt-item mt-4 border p-4 rounded">
+                  <div>登録順: {index + 1}</div>
+                  <div>備品番号: {mgmt.num}</div>
+                  <div>備品名: {mgmt.equipmentName}</div>
+                  <div>備品情報: {mgmt.equipmentDetails}</div>
+                  <div>メールアドレス: {mgmt.email}</div>
+                  <div>登録日: {formatDate(mgmt.addedDate)}</div>
+                  <div className="mt-4">
+                    <h2>QRコード:</h2>
+                    {mgmt.qrCode ? (
+                      <div>
+                        <img
+                          src={mgmt.qrCode}
+                          alt="QRコード"
+                          style={{ width: "128px", height: "128px" }}
+                        />
+                        <a
+                          href={mgmt.qrCode}
+                          download={`qr_code_${mgmt.num}.png`}
+                          className="mt-2 inline-block bg-blue-500 text-white py-1 px-2 rounded"
+                        >
+                          QRコードをダウンロード
+                        </a>
+                      </div>
+                    ) : (
+                      <div>QRコードが見つかりません</div>
+                    )}
                   </div>
-                ) : (
-                  <div>QRコードが見つかりません</div>
-                )}
-              </div>
-            </div>
-          );
-        })
-      }
+                </div>
+              );
+            })}
+        </div>
+      ) : (
+        <div className="mb-4">
+          備品一覧を閲覧するには、サインインしてください。
+        </div>
+      )}
     </div>
   );
 };

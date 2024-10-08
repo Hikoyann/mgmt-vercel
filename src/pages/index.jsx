@@ -16,7 +16,6 @@ function Home() {
     <div>
       <Header />
       <Mgmt />
-      <Register />
     </div>
   );
 }
