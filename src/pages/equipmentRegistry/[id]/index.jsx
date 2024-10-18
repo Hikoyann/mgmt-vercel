@@ -174,7 +174,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                 <h2 className="text-lg font-semibold">備品レンタルフォーム</h2>
                 <form onSubmit={handleSubmit} className="mt-2">
                   <div className="mb-4">
-                    <label className="block">番号</label>
+                    <label className="block">学生番号</label>
                     <input
                       type="number"
                       name="num"
@@ -243,7 +243,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                   <div className="mt-2">
                     <h3>あなたが借りている備品情報</h3>
                     <div>備品番号: {borrowedItem.equipmentNum}</div>
-                    <div>番号: {borrowedItem.num}</div>
+                    <div>学生番号: {borrowedItem.num}</div>
                     <div>備品番号: {borrowedItem.name}</div>
                     <div>備品名: {borrowedItem.equipmentName}</div>
                     <div>用途: {borrowedItem.purpose}</div>
