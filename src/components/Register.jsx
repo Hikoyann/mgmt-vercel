@@ -108,7 +108,7 @@ export function Register() {
               </div>
             </form>
             {successMessage && ( // 成功メッセージの表示
-              <div className="mt-4 text-green-600 font-semibold">
+              <div className="mt-4 text-white font-semibold">
                 {successMessage}
               </div>
             )}

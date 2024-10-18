@@ -166,7 +166,9 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
           {user ? (
             Object.keys(_equipments).length === 0 ||
             !Object.values(_equipments).some((equipment) => {
-              return equipment && String(equipment.equipmentNum) === String(mgmt.num);
+              return (
+                equipment && String(equipment.equipmentNum) === String(mgmt.num)
+              );
             }) ? (
               <div className="mt-4">
                 <h2 className="text-lg font-semibold">備品レンタルフォーム</h2>
@@ -216,7 +218,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                   </div>
                 </form>
                 {borrowMessage && ( // 借りるメッセージの表示
-                  <div className="mt-4 text-green-600 font-semibold">
+                  <div className="mt-4 text-white font-semibold">
                     {borrowMessage}
                   </div>
                 )}
@@ -258,7 +260,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                   </div>
                 </form>
                 {returnMessage && ( // 返却メッセージの表示
-                  <div className="mt-4 text-green-600 font-semibold">
+                  <div className="mt-4 text-white font-semibold">
                     {returnMessage}
                   </div>
                 )}

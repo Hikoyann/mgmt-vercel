@@ -83,7 +83,7 @@ export function Equipment() {
                   </div>
                   <button
                     onClick={() => handleDelete(mgmt.id)}
-                    className="mt-2 bg-red-500 text-white py-1 px-2 rounded"
+                    className="mt-2 bg-gray-500 text-white py-1 px-2 rounded"
                   >
                     削除
                   </button>
