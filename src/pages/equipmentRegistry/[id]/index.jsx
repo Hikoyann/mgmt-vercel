@@ -83,7 +83,8 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
       setBorrowMessage("備品を借りました。");
       setTimeout(() => {
         setBorrowMessage("");
-      }, 5000);
+        window.location.reload();
+      }, 4000);
     }
   };
 
@@ -98,8 +99,6 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
 
       // データを削除
       await remove(equipmentRef);
-      console.log("備品データが削除されました。");
-
       // 返却後にフォームをリセット
       setReturnData({
         num: "",
@@ -111,7 +110,8 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
       setReturnMessage("備品を返却しました。");
       setTimeout(() => {
         setReturnMessage("");
-      }, 5000);
+        window.location.reload();
+      }, 4000);
     }
   };
 
