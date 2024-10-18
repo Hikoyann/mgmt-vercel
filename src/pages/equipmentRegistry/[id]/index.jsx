@@ -26,7 +26,7 @@ export const getServerSideProps = async (ctx) => {
   };
 };
 
-const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
+const MgmtID = ({ mgmt, _equipments = {} }) => {
   // 日付フォーマット関数
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
@@ -50,6 +50,8 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
   });
 
   const [form, setForm] = useState([]);
+  const [borrowMessage, setBorrowMessage] = useState("");
+  const [returnMessage, setReturnMessage] = useState("");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -69,10 +71,7 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
         email: user.email,
       };
 
-      await set(
-        ref(database, `equipments/${id}`),
-        updatedInputs
-      );
+      await set(ref(database, `equipments/${id}`), updatedInputs);
       setForm([...form, updatedInputs]);
       setInputs({
         num: "",
@@ -80,6 +79,11 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
         purpose: "",
         returnDate: "",
       });
+
+      setBorrowMessage("備品を借りました。");
+      setTimeout(() => {
+        setBorrowMessage("");
+      }, 5000);
     }
   };
 
@@ -103,6 +107,11 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
         purpose: "",
         returnDate: "",
       });
+
+      setReturnMessage("備品を返却しました。");
+      setTimeout(() => {
+        setReturnMessage("");
+      }, 5000);
     }
   };
 
@@ -206,6 +215,11 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
                     <button type="submit">送信</button>
                   </div>
                 </form>
+                {borrowMessage && ( // 借りるメッセージの表示
+                  <div className="mt-4 text-green-600 font-semibold">
+                    {borrowMessage}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="mb-4">
@@ -243,6 +257,11 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
                     <button type="submit">返却する</button>
                   </div>
                 </form>
+                {returnMessage && ( // 返却メッセージの表示
+                  <div className="mt-4 text-green-600 font-semibold">
+                    {returnMessage}
+                  </div>
+                )}
               </div>
             ) : (
               <div className="mb-4">返却フォームは表示できません。</div>
@@ -256,4 +275,4 @@ const Mgmt_ID = ({ mgmt, _equipments = {} }) => {
   );
 };
 
-export default Mgmt_ID;
+export default MgmtID;

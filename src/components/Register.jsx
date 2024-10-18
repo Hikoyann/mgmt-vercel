@@ -8,6 +8,7 @@ import QRCodeLib from "qrcode";
 
 export function Register() {
   const [user] = useAuthState(auth);
+  const [successMessage, setSuccessMessage] = useState("");
 
   const [inputs_2, setInputs_2] = useState({
     equipmentName: "",
@@ -63,12 +64,18 @@ export function Register() {
 
       // フォームのリセット
       setInputs_2({ equipmentName: "", equipmentDetails: "" });
+
+      setSuccessMessage("備品を登録しました。");
+
+      // 5秒後にメッセージを消す
+      setTimeout(() => {
+        setSuccessMessage("");
+      }, 5000);
     }
   };
 
   return (
     <div>
-
       <div className="w-full">
         {user ? (
           <div className="mt-4">
@@ -100,6 +107,11 @@ export function Register() {
                 </button>
               </div>
             </form>
+            {successMessage && ( // 成功メッセージの表示
+              <div className="mt-4 text-green-600 font-semibold">
+                {successMessage}
+              </div>
+            )}
           </div>
         ) : (
           <div className="mb-4">
