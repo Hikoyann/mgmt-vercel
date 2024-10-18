@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useState } from "react";
 import { signInWithPopup } from "firebase/auth";
 import { auth, database, provider } from "../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { ref, get, set, push } from "firebase/database";
+import { ref, get, set, push, remove } from "firebase/database";
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
 import QRCode from "qrcode.react";
@@ -31,6 +31,15 @@ export function Equipment() {
   const formatDate = (dateString) => {
     const options = { year: "numeric", month: "long", day: "numeric" };
     return new Date(dateString).toLocaleDateString(undefined, options);
+  };
+
+  const handleDelete = async (id) => {
+    const confirmed = window.confirm("この備品を削除しますか？");
+    if (confirmed) {
+      await remove(ref(database, `equipmentRegistry/${id}`));
+      setMgmt((prev) => prev.filter((mgmt) => mgmt.id !== id)); // 状態を更新
+      alert("削除しました");
+    }
   };
 
   return (
@@ -72,6 +81,12 @@ export function Equipment() {
                       <div>QRコードが見つかりません</div>
                     )}
                   </div>
+                  <button
+                    onClick={() => handleDelete(mgmt.id)}
+                    className="mt-2 bg-red-500 text-white py-1 px-2 rounded"
+                  >
+                    削除
+                  </button>
                 </div>
               );
             })}
