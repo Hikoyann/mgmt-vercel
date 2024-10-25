@@ -4,6 +4,13 @@ import { signInWithPopup } from "firebase/auth";
 import { auth, database, provider } from "../../../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
 import { ref, get, set, push, remove } from "firebase/database";
+import {
+  getStorage,
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
 import { Header } from "@/components/Header";
@@ -68,6 +75,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
         ...inputs,
         equipmentNum: mgmt.num,
         equipmentName: mgmt.equipmentName,
+        photo: mgmt.photo,
         email: user.email,
       };
 
@@ -158,6 +166,18 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
           <h1>備品情報</h1>
           <div>備品番号: {mgmt.num}</div>
           <div>備品名: {mgmt.equipmentName}</div>
+          <div>
+            <h2>写真:</h2>
+            {mgmt.photo ? (
+              <img
+                src={mgmt.photo}
+                alt="備品の写真"
+                style={{ width: "128px", height: "128px" }}
+              />
+            ) : (
+              <div>写真が見つかりません</div>
+            )}
+          </div>
           <div>備品情報: {mgmt.equipmentDetails}</div>
           <div>登録した日付: {formatDate(mgmt.addedDate)}</div>
         </div>
@@ -246,6 +266,18 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                     <div>学生番号: {borrowedItem.num}</div>
                     <div>備品番号: {borrowedItem.name}</div>
                     <div>備品名: {borrowedItem.equipmentName}</div>
+                    <div>
+                      <h2>写真:</h2>
+                      {borrowedItem.photo ? (
+                        <img
+                          src={borrowedItem.photo}
+                          alt="備品の写真"
+                          style={{ width: "128px", height: "128px" }}
+                        />
+                      ) : (
+                        <div>写真が見つかりません</div>
+                      )}
+                    </div>
                     <div>用途: {borrowedItem.purpose}</div>
                     <div>返却予定日: {borrowedItem.returnDate}</div>
                     <div>備品番号: {borrowedItem.email}</div>

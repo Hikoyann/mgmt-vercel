@@ -45,6 +45,18 @@ export function Mgmt() {
               <div>学生番号: {mgmt.num}</div>
               <div>名前: {mgmt.name}</div>
               <div>備品名: {mgmt.equipmentName}</div>
+              <div>
+                <h2>写真:</h2>
+                {mgmt.photo ? (
+                  <img
+                    src={mgmt.photo}
+                    alt="備品の写真"
+                    style={{ width: "128px", height: "128px" }}
+                  />
+                ) : (
+                  <div>写真が見つかりません</div>
+                )}
+              </div>
               <div>使用用途: {mgmt.purpose}</div>
               <div>返却予定日: {mgmt.returnDate}</div>
               <div>メールアドレス: {mgmt.email}</div>

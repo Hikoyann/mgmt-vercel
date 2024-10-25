@@ -57,6 +57,18 @@ export function Equipment() {
                   <div>登録順: {index + 1}</div>
                   <div>備品番号: {mgmt.num}</div>
                   <div>備品名: {mgmt.equipmentName}</div>
+                  <div>
+                    <h2>写真:</h2>
+                    {mgmt.photo ? (
+                      <img
+                        src={mgmt.photo}
+                        alt="備品の写真"
+                        style={{ width: "128px", height: "128px" }}
+                      />
+                    ) : (
+                      <div>写真が見つかりません</div>
+                    )}
+                  </div>
                   <div>備品情報: {mgmt.equipmentDetails}</div>
                   <div>メールアドレス: {mgmt.email}</div>
                   <div>登録日: {formatDate(mgmt.addedDate)}</div>

@@ -1,30 +1,42 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { signInWithPopup } from "firebase/auth";
-import { auth, database, provider } from "../lib/firebase";
+import { auth, database, storage, provider } from "../lib/firebase";
 import { useAuthState } from "react-firebase-hooks/auth";
-import { ref, get, set, push } from "firebase/database";
+import { ref as dbRef, get, set } from "firebase/database";
+import {
+  ref as storageRef,
+  uploadBytes,
+  getDownloadURL,
+} from "firebase/storage";
+
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
 
 export function Register() {
   const [user] = useAuthState(auth);
   const [successMessage, setSuccessMessage] = useState("");
+  const [photoFile, setPhotoFile] = useState(null);
 
-  const [inputs_2, setInputs_2] = useState({
+  const [inputs, setInputs] = useState({
     equipmentName: "",
     equipmentDetails: "",
   });
 
-  const handleChange_2 = (e) => {
-    const { name, value } = e.target;
-    setInputs_2({ ...inputs_2, [name]: value });
+  const handleFileChange = (e) => {
+    setPhotoFile(e.target.files[0]);
   };
 
-  const handleSubmit_2 = async (e) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setInputs({ ...inputs, [name]: value });
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    console.log(storage);
 
     if (user) {
-      const inventoryRef = ref(database, "equipmentRegistry");
+      const inventoryRef = dbRef(database, "equipmentRegistry");
       const snapshot = await get(inventoryRef);
 
       // 2. データの総数を取得して、新しい番号を決定
@@ -47,30 +59,43 @@ export function Register() {
       // QRコードを生成
       const qrCodeDataUrl = await QRCodeLib.toDataURL(qrDataUrl);
 
+      let photoUrl = "";
+      if (photoFile) {
+        const photoStorageRef = storageRef(
+          storage,
+          `equipmentPhotos/${newEquipmentNum}`
+        );
+        await uploadBytes(photoStorageRef, photoFile);
+        photoUrl = await getDownloadURL(photoStorageRef);
+      }
+
       const updatedInputs = {
         num: newEquipmentNum,
-        equipmentName: inputs_2.equipmentName,
-        equipmentDetails: inputs_2.equipmentDetails,
+        equipmentName: inputs.equipmentName,
+        equipmentDetails: inputs.equipmentDetails,
         qrCode: qrCodeDataUrl,
+        photo: photoUrl,
         addedDate: new Date().toISOString(), // 追加の日付
         email: user.email, // 登録したメールアドレス
       };
 
       // Firebaseデータベースの別のパスに送信
       await set(
-        ref(database, `equipmentRegistry/${newEquipmentNum}`),
+        dbRef(database, `equipmentRegistry/${newEquipmentNum}`),
         updatedInputs
       );
 
       // フォームのリセット
-      setInputs_2({ equipmentName: "", equipmentDetails: "" });
+      setInputs({ equipmentName: "", equipmentDetails: "" });
+      setPhotoFile(null);
 
       setSuccessMessage("備品を登録しました。");
 
       // 5秒後にメッセージを消す
       setTimeout(() => {
         setSuccessMessage("");
-      }, 5000);
+        window.location.reload();
+      }, 4000);
     }
   };
 
@@ -80,14 +105,14 @@ export function Register() {
         {user ? (
           <div className="mt-4">
             <h2 className="text-lg font-semibold">備品登録フォーム</h2>
-            <form onSubmit={handleSubmit_2}>
+            <form onSubmit={handleSubmit}>
               <div className="mb-4">
                 <label>備品名</label>
                 <input
                   type="text"
                   name="equipmentName"
-                  value={inputs_2.equipmentName}
-                  onChange={handleChange_2}
+                  value={inputs.equipmentName}
+                  onChange={handleChange}
                   required
                 />
               </div>
@@ -96,9 +121,17 @@ export function Register() {
                 <input
                   type="text"
                   name="equipmentDetails"
-                  value={inputs_2.equipmentDetails}
-                  onChange={handleChange_2}
+                  value={inputs.equipmentDetails}
+                  onChange={handleChange}
                   required
+                />
+              </div>
+              <div className="mb-4">
+                <label>写真をアップロード</label>
+                <input
+                  type="file"
+                  onChange={handleFileChange}
+                  accept="image/*"
                 />
               </div>
               <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
