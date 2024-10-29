@@ -156,11 +156,11 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
 
 
   return (
-    <>
+    <div>
       <Head>
-        <title>{mgmt.equipmentName} - 備品レンタル情報</title>
+        <title>{mgmt.equipmentName} - 備品 Rental</title>
       </Head>
-      <div>
+      <div className="w-full">
         <Header />
         <div>
           <h1>備品情報</h1>
@@ -305,7 +305,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
           )}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

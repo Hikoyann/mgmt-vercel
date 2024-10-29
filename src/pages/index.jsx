@@ -8,14 +8,20 @@ import QRCodeLib from "qrcode";
 import { Header } from "@/components/Header";
 import { Mgmt } from "@/components/Mgmt";
 import { Register } from "@/components/Register";
+import Head from "next/head";
 
 
 
 function Home() {
   return (
     <div>
-      <Header />
-      <Mgmt />
+      <Head>
+        <title>Home</title>
+      </Head>
+      <div>
+        <Header />
+        <Mgmt />
+      </div>
     </div>
   );
 }

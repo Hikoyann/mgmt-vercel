@@ -7,12 +7,18 @@ import { ref, get, set, push } from "firebase/database";
 import QRCodeLib from "qrcode";
 import { Header } from "@/components/Header";
 import { Register } from "@/components/Register";
+import Head from "next/head";
 
 function Home() {
   return (
     <div>
-      <Header />
-      <Register />
+      <Head>
+        <title>備品登録 Form</title>
+      </Head>
+      <div>
+        <Header />
+        <Register />
+      </div>
     </div>
   );
 }

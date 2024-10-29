@@ -46,68 +46,68 @@ export function Equipment() {
     <div>
       <div className="w-full">
         <h1 className="mt-5 text-xl font-bold">備品一覧</h1>
-      </div>
-      {user ? (
-        <div>
-          {mgmts
-            .filter((mgmt) => mgmt.num) // 備品番号があるものだけをフィルタリング
-            .map((mgmt, index) => {
-              return (
-                <div key={index} className="mgmt-item mt-4 border p-4 rounded">
-                  <div>登録順: {index + 1}</div>
-                  <div>備品番号: {mgmt.num}</div>
-                  <div>備品名: {mgmt.equipmentName}</div>
-                  <div>
-                    <h2>写真:</h2>
-                    {mgmt.photo ? (
-                      <img
-                        src={mgmt.photo}
-                        alt="備品の写真"
-                        style={{ width: "128px", height: "128px" }}
-                      />
-                    ) : (
-                      <div>写真が見つかりません</div>
-                    )}
-                  </div>
-                  <div>備品情報: {mgmt.equipmentDetails}</div>
-                  <div>メールアドレス: {mgmt.email}</div>
-                  <div>登録日: {formatDate(mgmt.addedDate)}</div>
-                  <div className="mt-4">
-                    <h2>QRコード:</h2>
-                    {mgmt.qrCode ? (
-                      <div>
+        {user ? (
+          <div>
+            {mgmts
+              .filter((mgmt) => mgmt.num) // 備品番号があるものだけをフィルタリング
+              .map((mgmt, index) => {
+                return (
+                  <div key={index} className="mgmt-item mt-4 border p-4 rounded">
+                    <div>登録順: {index + 1}</div>
+                    <div>備品番号: {mgmt.num}</div>
+                    <div>備品名: {mgmt.equipmentName}</div>
+                    <div>
+                      <h2>写真:</h2>
+                      {mgmt.photo ? (
                         <img
-                          src={mgmt.qrCode}
-                          alt="QRコード"
+                          src={mgmt.photo}
+                          alt="備品の写真"
                           style={{ width: "128px", height: "128px" }}
                         />
-                        <a
-                          href={mgmt.qrCode}
-                          download={`qr_code_${mgmt.num}.png`}
-                          className="mt-2 inline-block bg-blue-500 text-white py-1 px-2 rounded"
-                        >
-                          QRコードをダウンロード
-                        </a>
-                      </div>
-                    ) : (
-                      <div>QRコードが見つかりません</div>
-                    )}
+                      ) : (
+                        <div>写真が見つかりません</div>
+                      )}
+                    </div>
+                    <div>備品情報: {mgmt.equipmentDetails}</div>
+                    <div>メールアドレス: {mgmt.email}</div>
+                    <div>登録日: {formatDate(mgmt.addedDate)}</div>
+                    <div className="mt-4">
+                      <h2>QRコード:</h2>
+                      {mgmt.qrCode ? (
+                        <div>
+                          <img
+                            src={mgmt.qrCode}
+                            alt="QRコード"
+                            style={{ width: "128px", height: "128px" }}
+                          />
+                          <a
+                            href={mgmt.qrCode}
+                            download={`qr_code_${mgmt.num}.png`}
+                            className="mt-2 inline-block bg-blue-500 text-white py-1 px-2 rounded"
+                          >
+                            QRコードをダウンロード
+                          </a>
+                        </div>
+                      ) : (
+                        <div>QRコードが見つかりません</div>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => handleDelete(mgmt.id)}
+                      className="mt-2 bg-gray-500 text-white py-1 px-2 rounded"
+                    >
+                      削除
+                    </button>
                   </div>
-                  <button
-                    onClick={() => handleDelete(mgmt.id)}
-                    className="mt-2 bg-gray-500 text-white py-1 px-2 rounded"
-                  >
-                    削除
-                  </button>
-                </div>
-              );
-            })}
-        </div>
-      ) : (
-        <div className="mb-4">
-          備品一覧を閲覧するには、サインインしてください。
-        </div>
-      )}
+                );
+              })}
+          </div>
+        ) : (
+          <div className="mb-4">
+            備品一覧を閲覧するには、サインインしてください。
+          </div>
+        )}
+      </div>
     </div>
   );
 };
