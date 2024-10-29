@@ -49,22 +49,22 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
     returnDate: "",
   });
 
-  const [returnData, setReturnData] = useState({
-    num: "",
-    name: "",
-    purpose: "",
-    returnDate: "",
-  });
-
   const [form, setForm] = useState([]);
   const [borrowMessage, setBorrowMessage] = useState("");
   const [returnMessage, setReturnMessage] = useState("");
+
+  const getTodayDate = () => {
+    const today = new Date();
+    const yyyy = today.getFullYear();
+    const mm = String(today.getMonth() + 1).padStart(2, "0"); // 月は0から始まるため+1
+    const dd = String(today.getDate()).padStart(2, "0");
+    return `${yyyy}-${mm}-${dd}`;
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setInputs({ ...inputs, [name]: value });
   };
-
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -231,6 +231,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                       value={inputs.returnDate}
                       onChange={handleChange}
                       required
+                      min={getTodayDate()}
                     />
                   </div>
                   <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
