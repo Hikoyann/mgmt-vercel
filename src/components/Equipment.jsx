@@ -17,11 +17,11 @@ export function Equipment() {
       "https://login-8e441-default-rtdb.firebaseio.com/equipmentRegistry.json"
     );
     const json = await res.json();
-    const equipmentArray = Object.keys(json).map((key) => ({
+    const equipmentRegistryArray = Object.keys(json).map((key) => ({
       id: key,
       ...json[key],
     }));
-    setMgmt(equipmentArray);
+    setMgmt(equipmentRegistryArray);
   }, []);
 
   useEffect(() => {
@@ -34,6 +34,23 @@ export function Equipment() {
   };
 
   const handleDelete = async (id) => {
+    const res = await fetch(
+      "https://login-8e441-default-rtdb.firebaseio.com/equipments.json"
+    );
+    const json = await res.json();
+    if (json) {
+      const equipmentArray = Object.keys(json).map((key) => ({
+        id: key,
+        ...json[key],
+      }));
+
+      const isInUse = equipmentArray.some((item) => item.id === id);
+      if (isInUse) {
+        alert("この備品はレンタル中のため、削除できません。");
+        return;
+      }
+    }
+
     const confirmed = window.confirm("この備品を削除しますか？");
     if (confirmed) {
       await remove(ref(database, `equipmentRegistry/${id}`));
