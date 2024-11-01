@@ -108,7 +108,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
       // データを削除
       await remove(equipmentRef);
       // 返却後にフォームをリセット
-      setReturnData({
+      setInputs({
         num: "",
         name: "",
         purpose: "",
