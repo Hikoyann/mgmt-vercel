@@ -10,6 +10,7 @@
     "build:css": "postcss ./src/styles/styles.css -o ./src/styles/dist.css --verbose"
   },
   "dependencies": {
+    "dotenv": "^16.4.5",
     "firebase": "^10.13.0",
     "next": "14.2.6",
     "qrcode": "^1.5.4",

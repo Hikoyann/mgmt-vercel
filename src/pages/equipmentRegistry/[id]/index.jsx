@@ -66,6 +66,43 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
     setInputs({ ...inputs, [name]: value });
   };
 
+
+  const checkReturnDates = async () => {
+    const equipmentRef = ref(database, "equipments");
+    const snapshot = await get(equipmentRef);
+
+    if (snapshot.exists()) {
+      const equipments = snapshot.val();
+
+      for (const key in equipments) {
+        const equipment = equipments[key];
+
+        // 返却予定日を過ぎているかどうかをチェック
+        const returnDate = new Date(equipment.returnDate);
+        const today = new Date();
+
+        if (returnDate < today && !equipment.isReturned) {
+          // isReturnedは返却されているかどうかのフラグ
+          const message = `⚠️ **重要** ⚠️\n備品：${equipment.equipmentName}（ID: ${equipment.equipmentNum}）が返却予定日を過ぎました。\n早急に備品の返却を促してください。`;
+          sendToDiscord(message); // Discordに通知
+        }
+      }
+    }
+  };
+
+  // 定期的に返却予定日をチェック（例えば1時間ごと）
+  setInterval(checkReturnDates, 6 * 60 * 60 * 1000);
+
+  const sendToDiscord = async (message) => {
+    await fetch("/api/discord", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     const id = mgmt.num;
@@ -93,6 +130,14 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
         setBorrowMessage("");
         window.location.reload();
       }, 4000);
+
+      // 備品が借りられた時にディスコードに通知を送信
+      const message = `${user.displayName || user.email} さんが${
+        mgmt.equipmentName
+      }（ID: ${mgmt.num}）を借りました。使用用途: ${
+        inputs.purpose
+      }、返却予定日: ${inputs.returnDate}`;
+      sendToDiscord(message); // Discordに通知
     }
   };
 
@@ -120,6 +165,14 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
         setReturnMessage("");
         window.location.reload();
       }, 4000);
+
+      // 備品が返却された時にディスコードに通知を送信
+      const message = `${user.displayName || user.email} さんが${
+        borrowedItem.equipmentName
+      }（ID: ${
+        borrowedItem.equipmentNum
+      }）を返却しました。`;
+      sendToDiscord(message); // Discordに通知
     }
   };
 
