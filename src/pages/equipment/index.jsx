@@ -17,7 +17,9 @@ function Home() {
       </Head>
       <div>
         <Header />
-        <Register />
+        <div className="w-full">
+          <Register />
+        </div>
       </div>
     </div>
   );

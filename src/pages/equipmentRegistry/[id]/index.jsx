@@ -213,150 +213,159 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
       <Head>
         <title>{mgmt.equipmentName} - 備品 Rental</title>
       </Head>
-      <div className="w-full">
+      <div>
         <Header />
-        <div>
-          <h1>備品情報</h1>
-          <div>備品番号: {mgmt.num}</div>
-          <div>備品名: {mgmt.equipmentName}</div>
+        <div className="w-full">
           <div>
-            <h2>写真:</h2>
-            {mgmt.photo ? (
-              <img
-                src={mgmt.photo}
-                alt="備品の写真"
-                style={{ width: "128px", height: "128px" }}
-              />
-            ) : (
-              <div>写真が見つかりません</div>
-            )}
+            <h1>備品情報</h1>
+            <div>備品番号: {mgmt.num}</div>
+            <div>備品名: {mgmt.equipmentName}</div>
+            <div>
+              <h2>写真:</h2>
+              {mgmt.photo ? (
+                <img
+                  src={mgmt.photo}
+                  alt="備品の写真"
+                  style={{ width: "128px", height: "128px" }}
+                />
+              ) : (
+                <div>写真が見つかりません</div>
+              )}
+            </div>
+            <div>備品情報: {mgmt.equipmentDetails}</div>
+            <div>登録した日付: {formatDate(mgmt.addedDate)}</div>
           </div>
-          <div>備品情報: {mgmt.equipmentDetails}</div>
-          <div>登録した日付: {formatDate(mgmt.addedDate)}</div>
-        </div>
 
-        <div>
-          {user ? (
-            Object.keys(_equipments).length === 0 ||
-            !Object.values(_equipments).some((equipment) => {
-              return (
-                equipment && String(equipment.equipmentNum) === String(mgmt.num)
-              );
-            }) ? (
-              <div className="mt-4">
-                <h2 className="text-lg font-semibold">備品レンタルフォーム</h2>
-                <form onSubmit={handleSubmit} className="mt-2">
-                  <div className="mb-4">
-                    <label className="block">学生番号</label>
-                    <input
-                      type="number"
-                      name="num"
-                      value={inputs.num}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block">借りる人の名前</label>
-                    <input
-                      type="text"
-                      name="name"
-                      value={inputs.name}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block">使用用途</label>
-                    <input
-                      type="text"
-                      name="purpose"
-                      value={inputs.purpose}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block">返却予定日</label>
-                    <input
-                      type="date"
-                      name="returnDate"
-                      value={inputs.returnDate}
-                      onChange={handleChange}
-                      required
-                      min={getTodayDate()}
-                    />
-                  </div>
-                  <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
-                    <button type="submit">送信</button>
-                  </div>
-                </form>
-                {borrowMessage && ( // 借りるメッセージの表示
-                  <div className="mt-4 text-white font-semibold">
-                    {borrowMessage}
-                  </div>
-                )}
-              </div>
+          <div>
+            {user ? (
+              Object.keys(_equipments).length === 0 ||
+              !Object.values(_equipments).some((equipment) => {
+                return (
+                  equipment &&
+                  String(equipment.equipmentNum) === String(mgmt.num)
+                );
+              }) ? (
+                <div className="mt-4">
+                  <h2 className="text-lg font-semibold">
+                    備品レンタルフォーム
+                  </h2>
+                  <form onSubmit={handleSubmit} className="mt-2">
+                    <div className="mb-4">
+                      <label className="block">学生番号</label>
+                      <input
+                        type="number"
+                        name="num"
+                        value={inputs.num}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block">借りる人の名前</label>
+                      <input
+                        type="text"
+                        name="name"
+                        value={inputs.name}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block">使用用途</label>
+                      <input
+                        type="text"
+                        name="purpose"
+                        value={inputs.purpose}
+                        onChange={handleChange}
+                        required
+                      />
+                    </div>
+                    <div className="mb-4">
+                      <label className="block">返却予定日</label>
+                      <input
+                        type="date"
+                        name="returnDate"
+                        value={inputs.returnDate}
+                        onChange={handleChange}
+                        required
+                        min={getTodayDate()}
+                      />
+                    </div>
+                    <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                      <button type="submit">送信</button>
+                    </div>
+                  </form>
+                  {borrowMessage && ( // 借りるメッセージの表示
+                    <div className="mt-4 text-white font-semibold">
+                      {borrowMessage}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-4">
+                  この備品は既に借りられているため
+                  <br />
+                  レンタルフォームは表示できません。
+                </div>
+              )
             ) : (
               <div className="mb-4">
-                この備品は既に借りられているため、レンタルフォームは表示できません。
+                サインインをしていないため
+                <br />
+                レンタルフォームは表示できません。
               </div>
-            )
-          ) : (
-            <div className="mb-4">
-              サインインをしていないため、レンタルフォームは表示できません。
-            </div>
-          )}
-        </div>
-        <div>
-          {user ? (
-            shouldShowReturnForm() ? (
-              <div className="mt-4">
-                <h2 className="text-lg font-semibold">返却フォーム</h2>
-                {borrowedItem && (
-                  <div className="mt-2">
-                    <h3>あなたが借りている備品情報</h3>
-                    <div>備品番号: {borrowedItem.equipmentNum}</div>
-                    <div>学生番号: {borrowedItem.num}</div>
-                    <div>備品番号: {borrowedItem.name}</div>
-                    <div>備品名: {borrowedItem.equipmentName}</div>
-                    <div>
-                      <h2>写真:</h2>
-                      {borrowedItem.photo ? (
-                        <img
-                          src={borrowedItem.photo}
-                          alt="備品の写真"
-                          style={{ width: "128px", height: "128px" }}
-                        />
-                      ) : (
-                        <div>写真が見つかりません</div>
-                      )}
+            )}
+          </div>
+          <div>
+            {user ? (
+              shouldShowReturnForm() ? (
+                <div className="mt-4">
+                  <h2 className="text-lg font-semibold">返却フォーム</h2>
+                  {borrowedItem && (
+                    <div className="mt-2">
+                      <h3>あなたが借りている備品情報</h3>
+                      <div>備品番号: {borrowedItem.equipmentNum}</div>
+                      <div>学生番号: {borrowedItem.num}</div>
+                      <div>備品番号: {borrowedItem.name}</div>
+                      <div>備品名: {borrowedItem.equipmentName}</div>
+                      <div>
+                        <h2>写真:</h2>
+                        {borrowedItem.photo ? (
+                          <img
+                            src={borrowedItem.photo}
+                            alt="備品の写真"
+                            style={{ width: "128px", height: "128px" }}
+                          />
+                        ) : (
+                          <div>写真が見つかりません</div>
+                        )}
+                      </div>
+                      <div>用途: {borrowedItem.purpose}</div>
+                      <div>返却予定日: {borrowedItem.returnDate}</div>
+                      <div>備品番号: {borrowedItem.email}</div>
+                      <h2>
+                        あなたが借りている備品情報と合っていれば返却をしてください。
+                      </h2>
                     </div>
-                    <div>用途: {borrowedItem.purpose}</div>
-                    <div>返却予定日: {borrowedItem.returnDate}</div>
-                    <div>備品番号: {borrowedItem.email}</div>
-                    <h2>
-                      あなたが借りている備品情報と合っていれば返却をしてください。
-                    </h2>
-                  </div>
-                )}
-                <form onSubmit={handleReturn} className="mt-2">
-                  <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
-                    <button type="submit">返却する</button>
-                  </div>
-                </form>
-                {returnMessage && ( // 返却メッセージの表示
-                  <div className="mt-4 text-white font-semibold">
-                    {returnMessage}
-                  </div>
-                )}
-              </div>
+                  )}
+                  <form onSubmit={handleReturn} className="mt-2">
+                    <div className="inline-block bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-2 rounded-sm shadow-lg hover:shadow-xl transform hover:scale-105 transition-transform duration-200 ease-in-out mt-4">
+                      <button type="submit">返却する</button>
+                    </div>
+                  </form>
+                  {returnMessage && ( // 返却メッセージの表示
+                    <div className="mt-4 text-white font-semibold">
+                      {returnMessage}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <div className="mb-4">返却フォームは表示できません。</div>
+              )
             ) : (
-              <div className="mb-4">返却フォームは表示できません。</div>
-            )
-          ) : (
-            <div className="mb-4">サインインをしてください。</div>
-          )}
+              <div className="mb-4">サインインをしてください。</div>
+            )}
+          </div>
         </div>
       </div>
     </div>

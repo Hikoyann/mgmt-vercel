@@ -101,7 +101,7 @@ export function Register() {
 
   return (
     <div>
-      <div className="w-full">
+      <div>
         {user ? (
           <div className="mt-4">
             <h2 className="text-lg font-semibold">備品登録フォーム</h2>
