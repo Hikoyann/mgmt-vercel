@@ -54,10 +54,50 @@ export function Register() {
 
       const newEquipmentNum = maxEquipmentNum + 1;
       // const newInventoryRef = push(inventoryRef);
-      const qrDataUrl = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}`;
 
       // QRコードを生成
-      const qrCodeDataUrl = await QRCodeLib.toDataURL(qrDataUrl);
+      const qrDataUrlOne = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${1}`;
+      const qrCodeOne = await QRCodeLib.toDataURL(qrDataUrlOne);
+      const qrDataUrlTwo = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${2}`;
+      const qrCodeTwo = await QRCodeLib.toDataURL(qrDataUrlTwo);
+      const qrDataUrlThree = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${3}`;
+      const qrCodeThree = await QRCodeLib.toDataURL(qrDataUrlThree);
+      const qrDataUrlFour = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${4}`;
+      const qrCodeFour = await QRCodeLib.toDataURL(qrDataUrlFour);
+
+      console.log(qrCodeOne); // QRコード1のデータURL
+      console.log(qrCodeTwo); // QRコード2のデータURL
+      console.log(qrCodeThree); // QRコード3のデータURL
+      console.log(qrCodeFour); // QRコード4のデータURL
+
+      // QRコードをキャンバスに描画
+      const canvas = document.createElement("canvas");
+      const ctx = canvas.getContext("2d");
+      const qrSize = 100; // 1つのQRコードのサイズ
+      canvas.width = qrSize * 2; // 横幅: 2つ分
+      canvas.height = qrSize * 2; // 縦幅: 2つ分
+
+      // 画像をキャンバスに描画する非同期処理
+      const qrCodes = [qrCodeOne, qrCodeTwo, qrCodeThree, qrCodeFour];
+      const promises = qrCodes.map((qrCodeDataUrl, i) => {
+        const x = (i % 2) * qrSize;
+        const y = Math.floor(i / 2) * qrSize;
+        const img = new Image();
+        img.src = qrCodeDataUrl;
+
+        return new Promise((resolve) => {
+          img.onload = () => {
+            ctx.drawImage(img, x, y, qrSize, qrSize);
+            resolve();
+          };
+        });
+      });
+
+      // すべてのQRコード画像が描画されるのを待つ
+      await Promise.all(promises);
+
+      // 最終的にキャンバスをPNGとしてデータURLに変換
+      const combinedQrCodeDataUrl = canvas.toDataURL();
 
       let photoUrl = "";
       if (photoFile) {
@@ -73,7 +113,7 @@ export function Register() {
         num: newEquipmentNum,
         equipmentName: inputs.equipmentName,
         equipmentDetails: inputs.equipmentDetails,
-        qrCode: qrCodeDataUrl,
+        qrCode: combinedQrCodeDataUrl,
         photo: photoUrl,
         addedDate: new Date().toISOString(), // 追加の日付
         email: user.email, // 登録したメールアドレス
