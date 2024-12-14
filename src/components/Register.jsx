@@ -65,11 +65,6 @@ export function Register() {
       const qrDataUrlFour = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${4}`;
       const qrCodeFour = await QRCodeLib.toDataURL(qrDataUrlFour);
 
-      console.log(qrCodeOne); // QRコード1のデータURL
-      console.log(qrCodeTwo); // QRコード2のデータURL
-      console.log(qrCodeThree); // QRコード3のデータURL
-      console.log(qrCodeFour); // QRコード4のデータURL
-
       // QRコードをキャンバスに描画
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");

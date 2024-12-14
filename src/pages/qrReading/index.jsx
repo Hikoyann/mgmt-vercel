@@ -1,105 +1,100 @@
 import { useState, useEffect } from "react";
-import { QrReader } from "react-qr-reader";
 import { useRouter } from "next/router";
+import { QrReader } from "react-qr-reader";
 
-export default function MultiFrameScanner() {
-  const [scannedData, setScannedData] = useState([null, null, null, null]); // 各枠のスキャン結果
-  const [scanCount, setScanCount] = useState(0); // スキャンした回数
+export default function MultiQRCodeScanner() {
+  const [scannedData, setScannedData] = useState([]); // スキャンしたQRコードのIDとURL
+  const [scanCount, setScanCount] = useState({}); // 各URLのIDカウント
   const router = useRouter();
 
+  // QRコードをスキャンしたときの処理
   const handleResult = (result) => {
     if (result?.text) {
-      const detectedArea = detectArea(result); // スキャン結果がどの枠に属するかを判定する
-      if (detectedArea !== null && scannedData[detectedArea] === null) {
-        setScannedData((prevData) => {
-          const updatedData = [...prevData];
-          updatedData[detectedArea] = result.text; // 対応する枠に結果を保存
-          return updatedData;
+      // URL/id=? の形式を解析してURLとidを取り出す
+      const urlPattern = /(https?:\/\/[^\s]+)\/id=(\d+)/;
+      const match = result.text.match(urlPattern);
+
+      if (match) {
+        const url = match[1]; // QRコードのURL部分を取得
+        const id = match[2]; // QRコードのID部分を取得
+
+        // 同じURLがスキャンされた場合、そのURLのカウントを更新
+        setScanCount((prevScanCount) => {
+          const newScanCount = { ...prevScanCount };
+
+          // URLがまだ登録されていなければ、カウントを初期化
+          if (!newScanCount[url]) {
+            newScanCount[url] = new Set();
+          }
+
+          // 同じIDがスキャンされていない場合、そのIDを追加
+          if (!newScanCount[url].has(id)) {
+            newScanCount[url].add(id);
+          }
+
+          return newScanCount;
         });
 
-        setScanCount((prevCount) => prevCount + 1); // スキャンカウントを増加
+        // スキャンしたデータにURLを追加（重複しないように）
+        setScannedData((prevData) => {
+          if (!prevData.some((item) => item.url === url)) {
+            return [...prevData, { url, id }];
+          }
+          return prevData;
+        });
       }
     }
   };
 
-  const detectArea = (result) => {
-    // QRコードの位置を解析して、どの枠に属するか判定するロジックを実装
-    return null;
-  };
-
+  // すべてのIDが揃った場合に移動
   useEffect(() => {
-    if (scannedData.every((data) => data !== null)) {
-      const uniqueData = [...new Set(scannedData)]; // ユニークな値を抽出
-
-      if (uniqueData.length === 1) {
-        alert(`移動します: ${uniqueData[0]}`);
-        router.push(uniqueData[0]); // URLに移動
-      } else {
-        alert("スキャンしたQRコードが一致していません。再試行してください。");
-        setScannedData([null, null, null, null]); // リセット
-        setScanCount(0); // スキャンカウントもリセット
+    // 各URLに対応するIDがすべて揃った場合
+    for (const [url, ids] of Object.entries(scanCount)) {
+      if (ids.size === 4) {
+        alert(`すべてのQRコードが揃いました。移動します！`);
+        router.push(url); // 対応するURLに移動
+        return;
       }
     }
-  }, [scannedData, router]);
+  }, [scanCount, router]);
 
   return (
     <div style={{ textAlign: "center", marginTop: "50px" }}>
-      <h1>Single Camera with Multi Frames</h1>
-      <p>カメラビュー内の4つの枠にQRコードを配置してください。</p>
+      <h1>QRコードスキャナー</h1>
+      <p>カメラでQRコードを4つスキャンしてください。</p>
+
+      {/* QRコードリーダー */}
       <div
         style={{
           position: "relative",
           width: "100%",
           maxWidth: "600px",
           margin: "auto",
-          paddingTop: "100%",
-          border: "2px solid black",
-          borderRadius: "8px",
-          overflow: "hidden",
         }}
       >
-        {/* カメラビュー */}
-        <div
-          style={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0 }}
-        >
-          <QrReader
-            onResult={handleResult}
-            constraints={{ facingMode: "environment" }}
-            style={{ width: "100%", height: "100%" }}
-          />
-        </div>
-
-        {/* スキャン枠のオーバーレイ */}
-        {Array(4)
-          .fill(null)
-          .map((_, index) => (
-            <div
-              key={index}
-              style={{
-                position: "absolute",
-                border: "2px solid red",
-                boxSizing: "border-box",
-                backgroundColor: "rgba(255, 255, 255, 0.3)",
-                width: "30%", // 小さく調整
-                height: "30%",
-                left: index % 2 === 0 ? "10%" : "60%", // 配置位置を調整
-                top: index < 2 ? "10%" : "60%",
-              }}
-            ></div>
-          ))}
+        <QrReader
+          onResult={handleResult}
+          constraints={{ facingMode: "environment" }}
+          style={{ width: "100%", height: "100%" }}
+        />
       </div>
 
       <div style={{ marginTop: "20px" }}>
         <h3>スキャン結果</h3>
         <ul>
           {scannedData.map((data, index) => (
-            <li key={index}>
-              枠 {index + 1}: {data || "未スキャン"}
+            <li key={index}>{`URL: ${data.url}, ID: ${data.id}`}</li>
+          ))}
+        </ul>
+        <h4>スキャン回数</h4>
+        <ul>
+          {Object.entries(scanCount).map(([url, ids]) => (
+            <li key={url}>
+              {url} - スキャンされたID: {Array.from(ids).join(", ")}{" "}
+              (スキャン回数: {ids.size})
             </li>
           ))}
         </ul>
-
-        <h4>スキャン済み: {scanCount} / 4</h4>
       </div>
     </div>
   );
