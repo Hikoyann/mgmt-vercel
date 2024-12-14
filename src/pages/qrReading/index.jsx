@@ -104,6 +104,8 @@ const App = () => {
       </Head>
       <div>
         <Header />
+      </div>
+      <div>
         <div className="relative w-full h-screen">
           {/* カメラ映像 */}
           <video ref={videoRef} className="w-full h-full object-cover"></video>
