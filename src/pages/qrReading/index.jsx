@@ -16,9 +16,9 @@ export default function MultiQRCodeScanner() {
     const loadOpenCV = () => {
       if (window.cv && window.cv.getBuildInformation) {
         setOpencvLoaded(true);
-        startCamera(window.cv);
+        startCamera(window.cv); // OpenCVがロードされたらカメラを開始
       } else {
-        setTimeout(loadOpenCV, 100);
+        setTimeout(loadOpenCV, 100); // OpenCVがロードされるまで再試行
       }
     };
     loadOpenCV();
@@ -66,6 +66,7 @@ export default function MultiQRCodeScanner() {
         video.play();
 
         const processFrame = () => {
+          // OpenCVがロードされているかつ、カメラの映像が準備できているかチェック
           if (!opencvLoaded || video.videoWidth === 0) {
             requestAnimationFrame(processFrame);
             return;
@@ -94,9 +95,10 @@ export default function MultiQRCodeScanner() {
           src.delete();
           points.delete();
 
-          requestAnimationFrame(processFrame);
+          requestAnimationFrame(processFrame); // 次のフレーム処理
         };
 
+        // 最初のフレーム処理を開始
         requestAnimationFrame(processFrame);
       })
       .catch((error) => {
