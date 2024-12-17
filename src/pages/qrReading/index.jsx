@@ -83,7 +83,7 @@ export default function MultiQRCodeScanner() {
           const points = new cv.Mat();
           const decodedText = qrCodeDetector.detectAndDecode(src, points);
 
-          if (decodedText) {
+          if (decodedText && decodedText !== "") {
             console.log("QR Code detected:", decodedText); // QRコードが検出された場合のログ
             handleResult(decodedText);
           } else {
