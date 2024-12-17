@@ -117,6 +117,7 @@ export default function MultiQRCodeScanner() {
     <div>
       <Head>
         <title>QRコードスキャナー</title>
+        <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
       </Head>
       <Header />
       <div className="text-center mt-12">
