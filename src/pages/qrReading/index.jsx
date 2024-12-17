@@ -26,6 +26,8 @@ export default function MultiQRCodeScanner() {
 
   // QRコードの結果を処理
   const handleResult = (decodedText) => {
+    console.log("QRコードの結果:", decodedText); // ここでQRコードの結果をコンソールに出力
+
     const urlPattern = /equipmentRegistry\/(\d+)\?id=(\d+)/;
     const match = decodedText.match(urlPattern);
 
@@ -82,8 +84,10 @@ export default function MultiQRCodeScanner() {
           const decodedText = qrCodeDetector.detectAndDecode(src, points);
 
           if (decodedText) {
-            console.log("QR Code detected:", decodedText);
+            console.log("QR Code detected:", decodedText); // QRコードが検出された場合のログ
             handleResult(decodedText);
+          } else {
+            console.log("QRコードが検出されませんでした"); // QRコードが検出されなかった場合のログ
           }
 
           // メモリ解放
@@ -163,26 +167,6 @@ export default function MultiQRCodeScanner() {
     </div>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // import { useState, useEffect } from "react";
 // import { useRouter } from "next/router";
