@@ -56,6 +56,7 @@ export default function MultiQRCodeScanner() {
     const canvas = canvasRef.current;
     const qrCodeDetector = new cv.QRCodeDetector();
 
+    // 明示的にgetUserMediaを呼び出して、カメラの権限を要求
     navigator.mediaDevices
       .getUserMedia({ video: true })
       .then((stream) => {
