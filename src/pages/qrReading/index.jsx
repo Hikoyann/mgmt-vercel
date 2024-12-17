@@ -4,54 +4,53 @@ import Head from "next/head";
 import { Header } from "@/components/Header";
 
 export default function MultiQRCodeScanner() {
-  const [scanCount, setScanCount] = useState({});
-  const [scannedUrls, setScannedUrls] = useState([]);
+  const [scanCount, setScanCount] = useState({}); // スキャンしたQRコードのカウント
+  const [scannedUrls, setScannedUrls] = useState([]); // 認識済みのURL一覧
   const videoRef = useRef(null);
-  const canvasRef = useRef(null); // 再利用可能なcanvas
-  const router = useRouter();
+  const canvasRef = useRef(null);
   const [opencvLoaded, setOpencvLoaded] = useState(false);
+  const router = useRouter();
 
+  // OpenCVのロードを確認
   useEffect(() => {
-    const checkOpenCV = () => {
-      if (window.cv) {
+    const loadOpenCV = () => {
+      if (window.cv && window.cv.getBuildInformation) {
         setOpencvLoaded(true);
         startCamera(window.cv);
       } else {
-        setTimeout(checkOpenCV, 100); // OpenCVロード確認
+        setTimeout(loadOpenCV, 100);
       }
     };
-    checkOpenCV();
+    loadOpenCV();
   }, []);
 
+  // QRコードの結果を処理
   const handleResult = (decodedText) => {
     const urlPattern = /equipmentRegistry\/(\d+)\?id=(\d+)/;
     const match = decodedText.match(urlPattern);
 
     if (match) {
-      const pathId = match[1];
-      const queryId = match[2];
+      const [_, pathId, queryId] = match;
 
+      // スキャン済みURLの追加
       setScannedUrls((prev) => {
         const exists = prev.some(
           (entry) => entry.pathId === pathId && entry.queryId === queryId
         );
-        if (!exists) {
-          return [...prev, { pathId, queryId }];
-        }
-        return prev;
+        return exists ? prev : [...prev, { pathId, queryId }];
       });
 
+      // カウント管理
       setScanCount((prev) => {
         const updatedCount = { ...prev };
-        if (!updatedCount[pathId]) {
-          updatedCount[pathId] = new Set();
-        }
+        if (!updatedCount[pathId]) updatedCount[pathId] = new Set();
         updatedCount[pathId].add(queryId);
         return updatedCount;
       });
     }
   };
 
+  // カメラを開始してフレーム処理
   const startCamera = (cv) => {
     const video = videoRef.current;
     const canvas = canvasRef.current;
@@ -69,14 +68,15 @@ export default function MultiQRCodeScanner() {
             return;
           }
 
+          // フレームをキャンバスに描画
           const ctx = canvas.getContext("2d");
           canvas.width = video.videoWidth;
           canvas.height = video.videoHeight;
           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
+          // OpenCVでQRコードを検出
           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
           const src = cv.matFromImageData(imageData);
-
           const points = new cv.Mat();
           const decodedText = qrCodeDetector.detectAndDecode(src, points);
 
@@ -85,23 +85,27 @@ export default function MultiQRCodeScanner() {
             handleResult(decodedText);
           }
 
+          // メモリ解放
           src.delete();
           points.delete();
+
           requestAnimationFrame(processFrame);
         };
 
         requestAnimationFrame(processFrame);
       })
       .catch((error) => {
-        console.error("Error accessing camera:", error);
+        console.error("カメラアクセスエラー:", error);
+        alert("カメラにアクセスできませんでした。設定を確認してください。");
       });
   };
 
+  // 全てのQRコードが揃ったらリダイレクト
   useEffect(() => {
     for (const [pathId, ids] of Object.entries(scanCount)) {
       if (ids.size === 4) {
         const redirectUrl = `https://mgmt-vercel.vercel.app/equipmentRegistry/${pathId}`;
-        alert(`全てのQRコードが揃いました！${redirectUrl} へ移動します。`);
+        alert(`全てのQRコードが揃いました！ ${redirectUrl} へ移動します。`);
         router.push(redirectUrl);
         break;
       }
@@ -120,7 +124,7 @@ export default function MultiQRCodeScanner() {
           カメラでQRコードをスキャンしてください。
         </p>
 
-        {/* Camera Feed */}
+        {/* カメラ映像 */}
         <div className="relative mx-auto" style={{ maxWidth: "640px" }}>
           <video ref={videoRef} style={{ width: "100%" }} />
           <canvas ref={canvasRef} style={{ display: "none" }} />
@@ -128,7 +132,7 @@ export default function MultiQRCodeScanner() {
 
         {!opencvLoaded && <p>Loading OpenCV...</p>}
 
-        {/* Recognized URLs */}
+        {/* 認識済みのQRコード */}
         <div className="mt-6">
           <h3 className="text-xl font-semibold">認識したQRコード一覧</h3>
           <ul className="list-disc list-inside">
@@ -141,7 +145,7 @@ export default function MultiQRCodeScanner() {
           </ul>
         </div>
 
-        {/* Scan State */}
+        {/* スキャン状況 */}
         <div className="mt-6">
           <h3 className="text-xl font-semibold">スキャン状況</h3>
           {Object.entries(scanCount).map(([pathId, ids]) => (
