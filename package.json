@@ -14,6 +14,7 @@
     "firebase": "^10.13.0",
     "jsqr": "^1.4.0",
     "next": "14.2.6",
+    "opencv.js": "^1.2.1",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.0.1",
     "react": "^18",
