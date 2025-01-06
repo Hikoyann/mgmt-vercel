@@ -207,32 +207,40 @@ export default function Home() {
       });
 
     // QRコードの読み取り設定
+    let lastScanTime = 0;
+    const scanInterval = 100; // ミリ秒単位の間隔。高すぎると性能低下。
+
     codeReader.decodeFromVideoDevice(
       null,
       videoRef.current,
       (result, error) => {
-        if (result) {
-          const url = result.getText();
-          const urlParams = new URLSearchParams(new URL(url).search);
-          const id = urlParams.get("id");
+        const currentTime = Date.now();
+        if (currentTime - lastScanTime > scanInterval) {
+          lastScanTime = currentTime;
 
-          // すべてのQRコード（ID: 1, 2, 3, 4）が読み取られた場合、スキャンを停止
-          if (id && id >= 1 && id <= 4 && !urls[id]) {
-            setUrls((prevUrls) => ({
-              ...prevUrls,
-              [id]: url,
-            }));
+          if (result) {
+            const url = result.getText();
+            const urlParams = new URLSearchParams(new URL(url).search);
+            const id = urlParams.get("id");
 
-            // 全てのQRコードが読み取れたらスキャンを停止
-            if (Object.values(urls).filter(Boolean).length === 3) {
-              setScanning(false); // スキャン停止
-              codeReader.reset(); // 読み取り停止
+            // すでにQRコードIDが読み取られている場合は無視
+            if (id && id >= 1 && id <= 4 && !urls[id]) {
+              setUrls((prevUrls) => ({
+                ...prevUrls,
+                [id]: url,
+              }));
+
+              // 全てのQRコードが読み取れたらスキャンを停止
+              if (Object.values(urls).filter(Boolean).length === 3) {
+                setScanning(false); // スキャン停止
+                codeReader.reset(); // 読み取り停止
+              }
             }
           }
-        }
 
-        if (error) {
-          console.error("QRコードの読み取りエラー:", error);
+          if (error && error !== "NotFoundError") {
+            console.error("QRコードの読み取りエラー:", error);
+          }
         }
       }
     );
