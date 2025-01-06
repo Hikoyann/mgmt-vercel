@@ -1,31 +1,4 @@
-// import { useEffect, useRef, useState } from "react";
-// import { useRouter } from "next/router";
-// import Head from "next/head";
-// import { Header } from "@/components/Header";
-
-// export default function MultiQRCodeScanner() {
-//   const [scanCount, setScanCount] = useState({}); // スキャンしたQRコードのカウント
-//   const [scannedUrls, setScannedUrls] = useState([]); // 認識済みのURL一覧
-//   const videoRef = useRef(null);
-//   const canvasRef = useRef(null);
-//   const [opencvLoaded, setOpencvLoaded] = useState(false);
-//   const router = useRouter();
-
-//   // OpenCVのロードを確認
-//   useEffect(() => {
-//     const loadOpenCV = () => {
-//       if (window.cv && window.cv.getBuildInformation) {
-//         setOpencvLoaded(true);
-//         startCamera(window.cv); // OpenCVがロードされたらカメラを開始
-//       } else {
-//         setTimeout(loadOpenCV, 100); // OpenCVがロードされるまで再試行
-//       }
-//     };
-//     loadOpenCV();
-//   }, []);
-
-//   // QRコードの結果を処理
-//   const handleResult = (decodedText) => {
+// const handleResult = (decodedText) => {
 //     console.log("QRコードの結果:", decodedText); // ここでQRコードの結果をコンソールに出力
 
 //     const urlPattern = /equipmentRegistry\/(\d+)\?id=(\d+)/;
@@ -52,119 +25,139 @@
 //     }
 //   };
 
-//   // カメラを開始してフレーム処理
-//   const startCamera = (cv) => {
-//     const video = videoRef.current;
-//     const canvas = canvasRef.current;
-//     const qrCodeDetector = new cv.QRCodeDetector();
 
-//     // 明示的にgetUserMediaを呼び出して、カメラの権限を要求
+
+
+
+import { useRef, useState, useEffect } from "react";
+import { useRouter } from "next/router";
+import { QrReader } from "react-qr-reader";
+import Head from "next/head";
+import { Header } from "@/components/Header";
+import { BrowserMultiFormatReader } from "@zxing/library";
+
+// export default function Home() {
+//   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
+//   const [scanning, setScanning] = useState(true);
+//   const videoRef = useRef(null);
+
+//   useEffect(() => {
+//     const codeReader = new BrowserMultiFormatReader();
+
+//     // カメラの設定を最適化
+//     const constraints = {
+//       video: {
+//         facingMode: "environment", // 背面カメラを使用
+//         width: { ideal: 1280 }, // 解像度は1280x720
+//         height: { ideal: 720 },
+//         frameRate: { ideal: 60, max: 60 }, // 高フレームレートで素早く読み取る
+//       },
+//     };
+
+//     // メディアデバイスからストリームを取得
 //     navigator.mediaDevices
-//       .getUserMedia({ video: true })
+//       .getUserMedia(constraints)
 //       .then((stream) => {
-//         video.srcObject = stream;
-//         video.play();
-
-//         const processFrame = () => {
-//           // OpenCVがロードされているかつ、カメラの映像が準備できているかチェック
-//           if (!opencvLoaded || video.videoWidth === 0) {
-//             requestAnimationFrame(processFrame);
-//             return;
-//           }
-
-//           // フレームをキャンバスに描画
-//           const ctx = canvas.getContext("2d");
-//           canvas.width = video.videoWidth;
-//           canvas.height = video.videoHeight;
-//           ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-//           // OpenCVでQRコードを検出
-//           const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-//           const src = cv.matFromImageData(imageData);
-//           const points = new cv.Mat();
-//           const decodedText = qrCodeDetector.detectAndDecode(src, points);
-
-//           if (decodedText && decodedText !== "") {
-//             console.log("QR Code detected:", decodedText); // QRコードが検出された場合のログ
-//             handleResult(decodedText);
-//           } else {
-//             console.log("QRコードが検出されませんでした"); // QRコードが検出されなかった場合のログ
-//           }
-
-//           // メモリ解放
-//           src.delete();
-//           points.delete();
-
-//           requestAnimationFrame(processFrame); // 次のフレーム処理
-//         };
-
-//         // 最初のフレーム処理を開始
-//         requestAnimationFrame(processFrame);
+//         videoRef.current.srcObject = stream;
+//         videoRef.current.play();
 //       })
 //       .catch((error) => {
-//         console.error("カメラアクセスエラー:", error);
-//         alert("カメラにアクセスできませんでした。設定を確認してください。");
+//         console.error("カメラの取得に失敗しました:", error);
 //       });
+
+//     // QRコードの読み取り設定
+//     let lastScanTime = 0;
+//     const scanInterval = 100; // ミリ秒単位の間隔。高すぎると性能低下。
+
+//     codeReader.decodeFromVideoDevice(
+//       null,
+//       videoRef.current,
+//       (result, error) => {
+//         const currentTime = Date.now();
+//         if (currentTime - lastScanTime > scanInterval) {
+//           lastScanTime = currentTime;
+
+//           if (result) {
+//             const url = result.getText();
+//             const urlParams = new URLSearchParams(new URL(url).search);
+//             const id = urlParams.get("id");
+
+//             // すでにQRコードIDが読み取られている場合は無視
+//             if (id && id >= 1 && id <= 4 && !urls[id]) {
+//               setUrls((prevUrls) => ({
+//                 ...prevUrls,
+//                 [id]: url,
+//               }));
+
+//               // 全てのQRコードが読み取れたらスキャンを停止
+//               if (Object.values(urls).filter(Boolean).length === 3) {
+//                 setScanning(false); // スキャン停止
+//                 codeReader.reset(); // 読み取り停止
+//               }
+//             }
+//           }
+
+//           if (error && error !== "NotFoundError") {
+//             console.error("QRコードの読み取りエラー:", error);
+//           }
+//         }
+//       }
+//     );
+
+//     return () => {
+//       // コンポーネントがアンマウントされた場合にストリームを停止
+//       if (videoRef.current.srcObject) {
+//         const stream = videoRef.current.srcObject;
+//         const tracks = stream.getTracks();
+//         tracks.forEach((track) => track.stop());
+//       }
+//     };
+//   }, [urls]);
+
+//   const handleStopScanning = () => {
+//     setScanning(false);
 //   };
 
-//   // 全てのQRコードが揃ったらリダイレクト
-//   useEffect(() => {
-//     for (const [pathId, ids] of Object.entries(scanCount)) {
-//       if (ids.size === 4) {
-//         const redirectUrl = `https://mgmt-vercel.vercel.app/equipmentRegistry/${pathId}`;
-//         alert(`全てのQRコードが揃いました！ ${redirectUrl} へ移動します。`);
-//         router.push(redirectUrl);
-//         break;
-//       }
-//     }
-//   }, [scanCount, router]);
-
 //   return (
-//     <div>
-//       <Head>
-//         <title>QRコードスキャナー</title>
-//         <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
-//       </Head>
-//       <Header />
-//       <div className="text-center mt-12">
-//         <h1 className="text-2xl font-bold">QRコードスキャナー</h1>
-//         <p className="text-gray-600">
-//           カメラでQRコードをスキャンしてください。
-//         </p>
-
+//     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+//       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
+//       <div className="w-full max-w-4xl">
 //         {/* カメラ映像 */}
-//         <div className="relative mx-auto" style={{ maxWidth: "640px" }}>
-//           <video ref={videoRef} style={{ width: "100%" }} />
-//           <canvas ref={canvasRef} style={{ display: "none" }} />
-//         </div>
+//         <video ref={videoRef} className="w-full bg-black rounded" />
 
-//         {!opencvLoaded && <p>Loading OpenCV...</p>}
-
-//         {/* 認識済みのQRコード */}
-//         <div className="mt-6">
-//           <h3 className="text-xl font-semibold">認識したQRコード一覧</h3>
-//           <ul className="list-disc list-inside">
-//             {scannedUrls.map((entry, index) => (
-//               <li key={index} className="text-gray-700">
-//                 パスID: <span className="font-semibold">{entry.pathId}</span> -
-//                 クエリID: <span className="text-blue-600">{entry.queryId}</span>
+//         {/* 結果表示 */}
+//         <div className="mt-4 bg-white shadow rounded p-4">
+//           <h2 className="text-lg font-bold">スキャン結果:</h2>
+//           <ul className="list-disc list-inside mt-2">
+//             {[1, 2, 3, 4].map((id) => (
+//               <li key={id}>
+//                 <span className="font-bold">QRコード {id}:</span>{" "}
+//                 {urls[id] ? (
+//                   <a
+//                     href={urls[id]}
+//                     target="_blank"
+//                     rel="noopener noreferrer"
+//                     className="text-blue-500 underline"
+//                   >
+//                     {urls[id]}
+//                   </a>
+//                 ) : (
+//                   <span className="text-gray-500">スキャン結果待ち...</span>
+//                 )}
 //               </li>
 //             ))}
 //           </ul>
 //         </div>
 
-//         {/* スキャン状況 */}
-//         <div className="mt-6">
-//           <h3 className="text-xl font-semibold">スキャン状況</h3>
-//           {Object.entries(scanCount).map(([pathId, ids]) => (
-//             <div key={pathId} className="mt-2">
-//               <p>
-//                 パスID: <span className="font-bold">{pathId}</span> - 認識ID:{" "}
-//                 {[...ids].sort().join(", ")}
-//               </p>
-//             </div>
-//           ))}
-//         </div>
+//         {/* スキャン停止ボタン */}
+//         {scanning && (
+//           <button
+//             onClick={handleStopScanning}
+//             className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
+//           >
+//             スキャン停止
+//           </button>
+//         )}
 //       </div>
 //     </div>
 //   );
@@ -172,134 +165,153 @@
 
 
 
+// import { useRef, useState, useEffect } from "react";
+import * as tf from "@tensorflow/tfjs";
+// import { BrowserMultiFormatReader } from "@zxing/library";
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-import { useEffect, useRef, useState } from "react";
-
-export default function Home() {
+export default function QRScannerYOLO() {
   const videoRef = useRef(null);
   const canvasRef = useRef(null);
-  const [loaded, setLoaded] = useState(false);
-  const [qrResults, setQrResults] = useState([]);
+  const [qrCodeData, setQrCodeData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
-    const loadOpenCV = async () => {
-      if (typeof window === "undefined") return;
-      const script = document.createElement("script");
-      script.src = "https://docs.opencv.org/4.x/opencv.js";
-      script.async = true;
-      script.onload = () => setLoaded(true);
-      document.body.appendChild(script);
-    };
+    let model = null;
 
-    loadOpenCV();
-  }, []);
-
-  useEffect(() => {
-    if (!loaded || !videoRef.current || !canvasRef.current) return;
-
-    let streaming = false;
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    const startVideoStream = async () => {
-      const constraints = {
-        video: {
-          facingMode: "environment", // 背面カメラ
-        },
-      };
-
+    const loadModel = async () => {
       try {
+        // YOLOモデルのロード
+        model = await tf.loadGraphModel("/path/to/yolo/model.json");
+        console.log("YOLOモデルをロードしました");
+      } catch (error) {
+        console.error("YOLOモデルのロードに失敗しました:", error);
+      }
+    };
+
+    const startCamera = async () => {
+      try {
+        const constraints = {
+          video: { facingMode: "environment", width: 1280, height: 720 },
+        };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        video.srcObject = stream;
-        video.play();
-        streaming = true;
-      } catch (err) {
-        console.error("カメラアクセスに失敗しました:", err);
-      }
-    };
-
-    const detectQRCode = () => {
-      if (!streaming) return;
-
-      const ctx = canvas.getContext("2d");
-      const width = video.videoWidth;
-      const height = video.videoHeight;
-
-      canvas.width = width;
-      canvas.height = height;
-
-      ctx.drawImage(video, 0, 0, width, height);
-      const src = cv.imread(canvas); // OpenCV用画像取得
-      const gray = new cv.Mat();
-      const qrDecoder = new cv.QRCodeDetector();
-
-      cv.cvtColor(src, gray, cv.COLOR_RGBA2GRAY); // グレースケール化
-
-      const points = new cv.Mat(); // QRコードの位置座標
-      const result = new cv.MatVector(); // 検出結果
-
-      const decoded = qrDecoder.detectAndDecodeMulti(gray, points, result);
-      if (decoded) {
-        const codes = [];
-        for (let i = 0; i < result.size(); i++) {
-          codes.push(result.get(i).data);
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
         }
-        setQrResults(codes);
+      } catch (error) {
+        console.error("カメラの起動に失敗しました:", error);
       }
-
-      // 後処理
-      src.delete();
-      gray.delete();
-      points.delete();
-      result.delete();
-
-      requestAnimationFrame(detectQRCode); // ループ処理
     };
 
-    startVideoStream().then(() => detectQRCode());
+    const detectObjects = async () => {
+      if (!videoRef.current || !canvasRef.current || !model) return;
+
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+
+      const tfImg = tf.browser.fromPixels(video);
+      const resizedImg = tf.image.resizeBilinear(tfImg, [640, 640]);
+      const expandedImg = resizedImg.expandDims(0).div(255.0);
+
+      const predictions = await model.executeAsync(expandedImg);
+
+      // 検出されたオブジェクトのデータを取得
+      const boxes = predictions[0].arraySync()[0];
+      const scores = predictions[1].arraySync()[0];
+      const classes = predictions[2].arraySync()[0];
+
+      // スコアが一定以上のものを描画
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      boxes.forEach((box, i) => {
+        if (scores[i] > 0.5 && classes[i] === 0) {
+          // QRコードクラスIDを指定
+          const [ymin, xmin, ymax, xmax] = box;
+          const x = xmin * canvas.width;
+          const y = ymin * canvas.height;
+          const width = (xmax - xmin) * canvas.width;
+          const height = (ymax - ymin) * canvas.height;
+
+          // 描画
+          ctx.strokeStyle = "red";
+          ctx.lineWidth = 2;
+          ctx.strokeRect(x, y, width, height);
+
+          // QRコード領域の切り抜きとデコード
+          const qrCanvas = document.createElement("canvas");
+          qrCanvas.width = width;
+          qrCanvas.height = height;
+          const qrCtx = qrCanvas.getContext("2d");
+          qrCtx.drawImage(video, x, y, width, height, 0, 0, width, height);
+
+          const imageData = qrCtx.getImageData(0, 0, width, height);
+          const codeReader = new BrowserMultiFormatReader();
+          codeReader
+            .decodeFromImage(imageData)
+            .then((result) => {
+              setQrCodeData(result.text);
+              setScanning(false);
+            })
+            .catch((err) => console.error("QRコードデコードエラー:", err));
+        }
+      });
+
+      tfImg.dispose();
+      resizedImg.dispose();
+      expandedImg.dispose();
+      predictions.forEach((p) => p.dispose());
+    };
+
+    const interval = setInterval(detectObjects, 500); // 定期スキャン
+
+    const initialize = async () => {
+      setLoading(true);
+      await loadModel();
+      await startCamera();
+      setLoading(false);
+    };
+
+    initialize();
 
     return () => {
-      if (video.srcObject) {
-        const stream = video.srcObject;
-        stream.getTracks().forEach((track) => track.stop());
-        video.srcObject = null;
+      clearInterval(interval);
+      if (videoRef.current && videoRef.current.srcObject) {
+        const tracks = videoRef.current.srcObject.getTracks();
+        tracks.forEach((track) => track.stop());
       }
     };
-  }, [loaded]);
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center">
-      <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
-      <video ref={videoRef} className="w-full max-w-md bg-black rounded" />
-      <canvas ref={canvasRef} className="hidden" />
-      <div className="mt-4 bg-white shadow rounded p-4 w-full max-w-md">
-        <h2 className="text-lg font-bold">検出結果:</h2>
-        <ul className="list-disc list-inside mt-2">
-          {qrResults.length > 0 ? (
-            qrResults.map((result, index) => (
-              <li key={index}>
-                <span className="font-bold">QRコード {index + 1}:</span>{" "}
-                <span className="text-blue-500">{result}</span>
-              </li>
-            ))
-          ) : (
-            <li className="text-gray-500">スキャン結果待ち...</li>
-          )}
-        </ul>
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <h1 className="text-2xl font-bold mb-4">QRコードスキャナー（YOLO版）</h1>
+      <div className="w-full max-w-4xl">
+        {loading ? (
+          <p>モデルをロード中...</p>
+        ) : (
+          <>
+            <video ref={videoRef} className="w-full bg-black rounded" />
+            <canvas ref={canvasRef} className="w-full absolute top-0 left-0" />
+
+            {qrCodeData && (
+              <div className="mt-4 bg-white shadow rounded p-4">
+                <h2 className="text-lg font-bold">スキャン結果:</h2>
+                <a
+                  href={qrCodeData}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline"
+                >
+                  {qrCodeData}
+                </a>
+              </div>
+            )}
+          </>
+        )}
       </div>
     </div>
   );
