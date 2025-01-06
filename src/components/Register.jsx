@@ -56,7 +56,7 @@ export function Register() {
       // QRコードのオプションを変更して簡略化
       const qrOptions = {
         errorCorrectionLevel: "L", // 最小のエラー訂正でQRコードをシンプルに
-        margin: 0.5, // 余白を最小化
+        margin: 1, // 余白を最小化
         scale: 1, // QRコードのスケールを最小にして、ブロックサイズを小さくする
       };
 
