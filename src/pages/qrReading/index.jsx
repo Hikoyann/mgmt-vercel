@@ -179,10 +179,34 @@ import { BrowserMultiFormatReader } from "@zxing/library";
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
+  const [scanning, setScanning] = useState(true);
   const videoRef = useRef(null);
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
+
+    // カメラの設定を最適化
+    const constraints = {
+      video: {
+        facingMode: "environment", // 背面カメラを使用
+        width: { ideal: 1280 }, // 解像度は1280x720
+        height: { ideal: 720 },
+        frameRate: { ideal: 60, max: 60 }, // 高フレームレートで素早く読み取る
+      },
+    };
+
+    // メディアデバイスからストリームを取得
+    navigator.mediaDevices
+      .getUserMedia(constraints)
+      .then((stream) => {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+      })
+      .catch((error) => {
+        console.error("カメラの取得に失敗しました:", error);
+      });
+
+    // QRコードの読み取り設定
     codeReader.decodeFromVideoDevice(
       null,
       videoRef.current,
@@ -192,23 +216,40 @@ export default function Home() {
           const urlParams = new URLSearchParams(new URL(url).search);
           const id = urlParams.get("id");
 
-          if (id && id >= 1 && id <= 4) {
+          // すべてのQRコード（ID: 1, 2, 3, 4）が読み取られた場合、スキャンを停止
+          if (id && id >= 1 && id <= 4 && !urls[id]) {
             setUrls((prevUrls) => ({
               ...prevUrls,
-              [id]: url, // IDに基づいて対応するURLを設定
+              [id]: url,
             }));
+
+            // 全てのQRコードが読み取れたらスキャンを停止
+            if (Object.values(urls).filter(Boolean).length === 3) {
+              setScanning(false); // スキャン停止
+              codeReader.reset(); // 読み取り停止
+            }
           }
         }
+
         if (error) {
-          console.error(error);
+          console.error("QRコードの読み取りエラー:", error);
         }
       }
     );
 
     return () => {
-      codeReader.reset();
+      // コンポーネントがアンマウントされた場合にストリームを停止
+      if (videoRef.current.srcObject) {
+        const stream = videoRef.current.srcObject;
+        const tracks = stream.getTracks();
+        tracks.forEach((track) => track.stop());
+      }
     };
-  }, []);
+  }, [urls]);
+
+  const handleStopScanning = () => {
+    setScanning(false);
+  };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
@@ -240,6 +281,16 @@ export default function Home() {
             ))}
           </ul>
         </div>
+
+        {/* スキャン停止ボタン */}
+        {scanning && (
+          <button
+            onClick={handleStopScanning}
+            className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
+          >
+            スキャン停止
+          </button>
+        )}
       </div>
     </div>
   );
