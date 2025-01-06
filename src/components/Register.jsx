@@ -9,8 +9,8 @@ import {
   getDownloadURL,
 } from "firebase/storage";
 
-// import { QRCode } from 'qrcode.react';
-import QRCodeLib from "qrcode";
+import QRCode from "qrcode";
+// import QRCodeLib from "qrcode";
 
 export function Register() {
   const [user] = useAuthState(auth);
@@ -39,12 +39,13 @@ export function Register() {
       const inventoryRef = dbRef(database, "equipmentRegistry");
       const snapshot = await get(inventoryRef);
 
-      // データの総数を取得して、新しい番号を決定
+      // 2. データの総数を取得して、新しい番号を決定
+      // 既存のデータから最大の番号を取得
       let maxEquipmentNum = 0;
       if (snapshot.exists()) {
         const existingData = snapshot.val();
         for (const key in existingData) {
-          const equipmentNum = existingData[key].num;
+          const equipmentNum = existingData[key].num; // 既存の番号
           if (equipmentNum > maxEquipmentNum) {
             maxEquipmentNum = equipmentNum;
           }
@@ -52,30 +53,40 @@ export function Register() {
       }
 
       const newEquipmentNum = maxEquipmentNum + 1;
+      // const newInventoryRef = push(inventoryRef);
 
-      // QRコードのオプションを変更して簡略化
-      const qrOptions = {
-        errorCorrectionLevel: "L", // 最小のエラー訂正でQRコードをシンプルに
-        margin: 1, // 余白を最小化
-        scale: 1, // QRコードのスケールを最小にして、ブロックサイズを小さくする
-      };
-
-      // QRコードを生成（簡略化）
+      // QRコードを生成
       const qrDataUrlOne = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${1}`;
-      const qrCodeOne = await QRCodeLib.toDataURL(qrDataUrlOne, qrOptions);
+      const qrCodeOne = await QRCode.toDataURL(qrDataUrlOne, {
+        errorCorrectionLevel: "M", // 少しエラー訂正を強化
+        width: 200, // QRコードの幅を200pxに設定
+        margin: 2, // 少し余白を持たせる（2px程度）
+      });
       const qrDataUrlTwo = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${2}`;
-      const qrCodeTwo = await QRCodeLib.toDataURL(qrDataUrlTwo, qrOptions);
+      const qrCodeTwo = await QRCode.toDataURL(qrDataUrlTwo, {
+        errorCorrectionLevel: "M", // 少しエラー訂正を強化
+        width: 200, // QRコードの幅を200pxに設定
+        margin: 2, // 少し余白を持たせる（2px程度）
+      });
       const qrDataUrlThree = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${3}`;
-      const qrCodeThree = await QRCodeLib.toDataURL(qrDataUrlThree, qrOptions);
+      const qrCodeThree = await QRCode.toDataURL(qrDataUrlThree, {
+        errorCorrectionLevel: "M", // 少しエラー訂正を強化
+        width: 200, // QRコードの幅を200pxに設定
+        margin: 2, // 少し余白を持たせる（2px程度）
+      });
       const qrDataUrlFour = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${4}`;
-      const qrCodeFour = await QRCodeLib.toDataURL(qrDataUrlFour, qrOptions);
+      const qrCodeFour = await QRCode.toDataURL(qrDataUrlFour, {
+        errorCorrectionLevel: "M", // 少しエラー訂正を強化
+        width: 200, // QRコードの幅を200pxに設定
+        margin: 2, // 少し余白を持たせる（2px程度）
+      });
 
       // QRコードをキャンバスに描画
       const canvas = document.createElement("canvas");
       const ctx = canvas.getContext("2d");
-      const qrSize = 60; // QRコードのサイズを少し小さく
-      canvas.width = qrSize * 2;
-      canvas.height = qrSize * 2;
+      const qrSize = 100; // 1つのQRコードのサイズ
+      canvas.width = qrSize * 2; // 横幅: 2つ分
+      canvas.height = qrSize * 2; // 縦幅: 2つ分
 
       // 画像をキャンバスに描画する非同期処理
       const qrCodes = [qrCodeOne, qrCodeTwo, qrCodeThree, qrCodeFour];
@@ -115,11 +126,11 @@ export function Register() {
         equipmentDetails: inputs.equipmentDetails,
         qrCode: combinedQrCodeDataUrl,
         photo: photoUrl,
-        addedDate: new Date().toISOString(),
-        email: user.email,
+        addedDate: new Date().toISOString(), // 追加の日付
+        email: user.email, // 登録したメールアドレス
       };
 
-      // Firebaseデータベースに送信
+      // Firebaseデータベースの別のパスに送信
       await set(
         dbRef(database, `equipmentRegistry/${newEquipmentNum}`),
         updatedInputs
@@ -138,7 +149,6 @@ export function Register() {
       }, 4000);
     }
   };
-
 
   return (
     <div>
