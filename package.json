@@ -10,6 +10,7 @@
     "build:css": "postcss ./src/styles/styles.css -o ./src/styles/dist.css --verbose"
   },
   "dependencies": {
+    "@zxing/library": "^0.21.3",
     "dotenv": "^16.4.5",
     "firebase": "^10.13.0",
     "jsqr": "^1.4.0",
