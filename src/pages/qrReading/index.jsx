@@ -192,20 +192,29 @@ export default function QRScannerYOLO() {
     const startCamera = async () => {
       try {
         const constraints = {
-          video: { facingMode: "environment", width: 1280, height: 720 },
+          video: {
+            facingMode: "environment",
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+          },
         };
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
+
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
-          videoRef.current.play();
+
+          videoRef.current.onloadedmetadata = () => {
+            videoRef.current.play();
+          };
         }
       } catch (error) {
         console.error("カメラの起動に失敗しました:", error);
       }
     };
 
+
     const detectObjects = async () => {
-      if (!videoRef.current || !canvasRef.current || !model) return;
+      if (!videoRef.current || !canvasRef.current || !model || loading) return;
 
       const video = videoRef.current;
       const canvas = canvasRef.current;
@@ -294,7 +303,12 @@ export default function QRScannerYOLO() {
           <p>モデルをロード中...</p>
         ) : (
           <>
-            <video ref={videoRef} className="w-full bg-black rounded" />
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              className="w-full bg-black rounded"
+            />
             <canvas ref={canvasRef} className="w-full absolute top-0 left-0" />
 
             {qrCodeData && (
