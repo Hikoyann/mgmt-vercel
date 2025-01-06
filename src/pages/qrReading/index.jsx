@@ -29,12 +29,12 @@
 
 
 
-import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { QrReader } from "react-qr-reader";
-import Head from "next/head";
-import { Header } from "@/components/Header";
-import { BrowserMultiFormatReader } from "@zxing/library";
+// import { useRef, useState, useEffect } from "react";
+// import { useRouter } from "next/router";
+// import { QrReader } from "react-qr-reader";
+// import Head from "next/head";
+// import { Header } from "@/components/Header";
+// import { BrowserMultiFormatReader } from "@zxing/library";
 
 // export default function Home() {
 //   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
@@ -165,9 +165,9 @@ import { BrowserMultiFormatReader } from "@zxing/library";
 
 
 
-// import { useRef, useState, useEffect } from "react";
+import { useRef, useState, useEffect } from "react";
 import * as tf from "@tensorflow/tfjs";
-// import { BrowserMultiFormatReader } from "@zxing/library";
+import { BrowserMultiFormatReader } from "@zxing/library";
 
 export default function QRScannerYOLO() {
   const videoRef = useRef(null);
@@ -179,9 +179,9 @@ export default function QRScannerYOLO() {
   useEffect(() => {
     let model = null;
 
+    // YOLOモデルのロード
     const loadModel = async () => {
       try {
-        // YOLOモデルのロード
         model = await tf.loadGraphModel("/path/to/yolo/model.json");
         console.log("YOLOモデルをロードしました");
       } catch (error) {
@@ -189,6 +189,7 @@ export default function QRScannerYOLO() {
       }
     };
 
+    // カメラの初期化
     const startCamera = async () => {
       try {
         const constraints = {
@@ -212,7 +213,7 @@ export default function QRScannerYOLO() {
       }
     };
 
-
+    // 物体検出処理
     const detectObjects = async () => {
       if (!videoRef.current || !canvasRef.current || !model || loading) return;
 
@@ -227,14 +228,13 @@ export default function QRScannerYOLO() {
       const resizedImg = tf.image.resizeBilinear(tfImg, [640, 640]);
       const expandedImg = resizedImg.expandDims(0).div(255.0);
 
+      // YOLOで物体検出
       const predictions = await model.executeAsync(expandedImg);
 
-      // 検出されたオブジェクトのデータを取得
       const boxes = predictions[0].arraySync()[0];
       const scores = predictions[1].arraySync()[0];
       const classes = predictions[2].arraySync()[0];
 
-      // スコアが一定以上のものを描画
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       boxes.forEach((box, i) => {
         if (scores[i] > 0.5 && classes[i] === 0) {
@@ -250,7 +250,7 @@ export default function QRScannerYOLO() {
           ctx.lineWidth = 2;
           ctx.strokeRect(x, y, width, height);
 
-          // QRコード領域の切り抜きとデコード
+          // QRコード領域を切り取ってデコード
           const qrCanvas = document.createElement("canvas");
           qrCanvas.width = width;
           qrCanvas.height = height;
@@ -259,11 +259,13 @@ export default function QRScannerYOLO() {
 
           const imageData = qrCtx.getImageData(0, 0, width, height);
           const codeReader = new BrowserMultiFormatReader();
+
+          // QRコードをデコード
           codeReader
             .decodeFromImage(imageData)
             .then((result) => {
               setQrCodeData(result.text);
-              setScanning(false);
+              setScanning(false); // QRコードを取得したらスキャンを停止
             })
             .catch((err) => console.error("QRコードデコードエラー:", err));
         }
@@ -293,7 +295,7 @@ export default function QRScannerYOLO() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [loading]);
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
