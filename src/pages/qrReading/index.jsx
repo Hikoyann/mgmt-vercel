@@ -164,6 +164,7 @@
 // }
 
 
+
 import { useRef, useState, useEffect } from "react";
 import { InferenceSession, Tensor } from "onnxjs"; // onnxjsライブラリ
 import { BrowserMultiFormatReader } from "@zxing/library"; // QRコード解析用
@@ -177,6 +178,7 @@ export default function QRScannerYOLO() {
   const [error, setError] = useState(""); // エラーメッセージ
   const [session, setSession] = useState(null); // YOLOv5の推論セッション
 
+  // YOLOv5モデルのロード
   const loadYOLOModel = async () => {
     try {
       const response = await fetch("/models/yolov5s.onnx");
@@ -192,7 +194,6 @@ export default function QRScannerYOLO() {
       console.error("モデルロードエラー:", err);
     }
   };
-
 
   // カメラの起動
   const startVideo = async () => {
