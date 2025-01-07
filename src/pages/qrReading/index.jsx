@@ -27,14 +27,13 @@
 
 
 // import { BrowserMultiFormatReader } from "@zxing/library";
-
 import { useState, useEffect, useRef } from "react";
-import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法に戻します
+import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
-  const [firstUrl, setFirstUrl] = useState(null);
+  const [url, setUrl] = useState(null); // 共有URLを格納
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -72,33 +71,30 @@ export default function Home() {
       videoRef.current,
       (result, error) => {
         if (result) {
-          const url = result.getText();
-          const urlParams = new URLSearchParams(new URL(url).search);
+          const scannedUrl = result.getText();
+          const urlParams = new URLSearchParams(new URL(scannedUrl).search);
           const id = urlParams.get("id");
 
-          // 最初に読み取ったURLがまだ設定されていない場合はそれを設定
-          if (!firstUrl) {
-            setFirstUrl(url);
+          // URLは全て同じなので、最初に読み取ったURLを保存
+          if (!url) {
+            setUrl(scannedUrl);
           }
 
-          // 最初に読み取ったURLと一致したQRコードだけを許可
-          if (
-            firstUrl &&
-            url === firstUrl &&
-            id &&
-            id >= 1 &&
-            id <= 4 &&
-            !urls[id]
-          ) {
-            setUrls((prevUrls) => ({
-              ...prevUrls,
-              [id]: url,
-            }));
+          // QRコードのIDが1から4の範囲であれば、状態を更新
+          if (id && id >= 1 && id <= 4) {
+            // すでにそのIDが読み取られている場合はスキップ
+            if (!urls[id]) {
+              setUrls((prevUrls) => {
+                const updatedUrls = { ...prevUrls, [id]: scannedUrl };
 
-            // すべてのQRコードが読み取れたらスキャンを停止
-            if (Object.values(urls).filter(Boolean).length === 3) {
-              setScanning(false);
-              codeReader.reset(); // 読み取り停止
+                // すべてのQRコードが読み取れた場合にスキャンを停止
+                if (Object.values(updatedUrls).filter(Boolean).length === 4) {
+                  setScanning(false);
+                  codeReader.reset(); // QRコード読み取りを停止
+                }
+
+                return updatedUrls;
+              });
             }
           }
         }
@@ -117,7 +113,7 @@ export default function Home() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls, firstUrl]);
+  }, [urls, url]); // `urls` と `url` が更新されるたびに再度QRコード読み取りを開始
 
   const handleStopScanning = () => {
     setScanning(false);
