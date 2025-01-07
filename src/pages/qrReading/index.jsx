@@ -191,7 +191,6 @@
 // }
 
 
-
 import { useState, useEffect, useRef } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
 
@@ -244,15 +243,17 @@ export default function Home() {
       const frameSize = 150; // 枠のサイズ
       const margin = 5; // 枠の間隔
 
-      // 左上、右上、左下、右下に枠を配置
+      // 4つの枠をまとめたdivを中央に配置
+      const divSize = frameSize * 2 + margin; // 4つの枠を含むdivのサイズ
+      const centerX = videoWidth / 2 - divSize / 2;
+      const centerY = videoHeight / 2 - divSize / 2;
+
+      // 4つの枠を配置する位置を計算
       const positions = [
-        { x: margin, y: margin }, // 左上
-        { x: videoWidth - frameSize - margin, y: margin }, // 右上
-        { x: margin, y: videoHeight - frameSize - margin }, // 左下
-        {
-          x: videoWidth - frameSize - margin,
-          y: videoHeight - frameSize - margin,
-        }, // 右下
+        { x: centerX, y: centerY }, // 左上
+        { x: centerX + frameSize + margin, y: centerY }, // 右上
+        { x: centerX, y: centerY + frameSize + margin }, // 左下
+        { x: centerX + frameSize + margin, y: centerY + frameSize + margin }, // 右下
       ];
 
       context.clearRect(0, 0, canvas.width, canvas.height); // 前の枠をクリア
