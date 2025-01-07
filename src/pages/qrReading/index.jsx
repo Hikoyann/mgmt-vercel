@@ -26,14 +26,15 @@
 //   };
 
 
-// import { BrowserMultiFormatReader } from "@zxing/library";
+
+
 import { useState, useEffect, useRef } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
-  const [url, setUrl] = useState(null); // 共有URLを格納
+  const [url, setUrl] = useState(null); // 最初に取得したURLを格納
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -45,7 +46,7 @@ export default function Home() {
         facingMode: "environment", // 背面カメラを使用
         width: { ideal: 1280 },
         height: { ideal: 720 },
-        frameRate: { ideal: 30, max: 30 },
+        frameRate: { ideal: 60, max: 60 },
       },
     };
 
@@ -75,22 +76,25 @@ export default function Home() {
           const urlParams = new URLSearchParams(new URL(scannedUrl).search);
           const id = urlParams.get("id");
 
-          // URLは全て同じなので、最初に読み取ったURLを保存
+          // 最初のURLを取得して保存
           if (!url) {
-            setUrl(scannedUrl);
+            setUrl(scannedUrl); // 最初に読み取ったURLを保存
           }
 
-          // QRコードのIDが1から4の範囲であれば、状態を更新
+          // IDが1〜4の範囲であれば、そのURLを保存
           if (id && id >= 1 && id <= 4) {
             // すでにそのIDが読み取られている場合はスキップ
             if (!urls[id]) {
               setUrls((prevUrls) => {
                 const updatedUrls = { ...prevUrls, [id]: scannedUrl };
 
-                // すべてのQRコードが読み取れた場合にスキャンを停止
+                // すべてのQRコードが読み取れたらスキャンを停止
                 if (Object.values(updatedUrls).filter(Boolean).length === 4) {
                   setScanning(false);
                   codeReader.reset(); // QRコード読み取りを停止
+
+                  // すべて読み取れたら最初のURLへ移動
+                  window.location.href = scannedUrl; // 最初に読み取ったURLへ移動
                 }
 
                 return updatedUrls;
@@ -128,6 +132,23 @@ export default function Home() {
           ref={videoRef}
           className="w-full h-auto bg-black rounded object-cover" // object-cover を追加
         />
+
+        {/* 最初のURLを表示 */}
+        {url && (
+          <div className="mt-4 bg-white shadow rounded p-4">
+            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
+            <p>
+              <a
+                href={url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+                {url}
+              </a>
+            </p>
+          </div>
+        )}
 
         {/* 結果表示 */}
         <div className="mt-4 bg-white shadow rounded p-4">
