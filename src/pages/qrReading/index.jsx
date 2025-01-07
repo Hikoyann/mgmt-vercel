@@ -26,10 +26,17 @@
 //   };
 
 
+// import { BrowserMultiFormatReader } from "@zxing/library";
 
 
-import { useRef, useState, useEffect } from "react";
-import { BrowserMultiFormatReader } from "@zxing/library";
+import { useState, useEffect, useRef } from "react";
+import dynamic from "next/dynamic";
+
+// @zxing/library はクライアントサイドでのみ利用可能なため、dynamic importを使用
+const { BrowserMultiFormatReader } = dynamic(
+  () => import("@zxing/library").then((mod) => mod),
+  { ssr: false }
+);
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
@@ -38,6 +45,8 @@ export default function Home() {
   const videoRef = useRef(null);
 
   useEffect(() => {
+    if (!BrowserMultiFormatReader) return; // @zxing/library が読み込まれていない場合は実行しない
+
     const codeReader = new BrowserMultiFormatReader();
 
     // カメラの設定を最適化
