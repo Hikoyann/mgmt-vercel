@@ -60,25 +60,25 @@ export function Register() {
       const qrCodeOne = await QRCode.toDataURL(qrDataUrlOne, {
         errorCorrectionLevel: "L", // 少しエラー訂正を強化
         width: 200, // QRコードの幅を200pxに設定
-        margin: 4, // 少し余白を持たせる（2px程度）
+        margin: 6, // 少し余白を持たせる（2px程度）
       });
       const qrDataUrlTwo = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${2}`;
       const qrCodeTwo = await QRCode.toDataURL(qrDataUrlTwo, {
         errorCorrectionLevel: "L", // 少しエラー訂正を強化
         width: 200, // QRコードの幅を200pxに設定
-        margin: 4, // 少し余白を持たせる（2px程度）
+        margin: 6, // 少し余白を持たせる（2px程度）
       });
       const qrDataUrlThree = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${3}`;
       const qrCodeThree = await QRCode.toDataURL(qrDataUrlThree, {
         errorCorrectionLevel: "L", // 少しエラー訂正を強化
         width: 200, // QRコードの幅を200pxに設定
-        margin: 4, // 少し余白を持たせる（2px程度）
+        margin: 6, // 少し余白を持たせる（2px程度）
       });
       const qrDataUrlFour = `https://mgmt-vercel.vercel.app/equipmentRegistry/${newEquipmentNum}?id=${4}`;
       const qrCodeFour = await QRCode.toDataURL(qrDataUrlFour, {
         errorCorrectionLevel: "L", // 少しエラー訂正を強化
         width: 200, // QRコードの幅を200pxに設定
-        margin: 4, // 少し余白を持たせる（2px程度）
+        margin: 6, // 少し余白を持たせる（2px程度）
       });
 
       // QRコードをキャンバスに描画
