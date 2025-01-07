@@ -177,18 +177,22 @@ export default function QRScannerYOLO() {
   const [error, setError] = useState(""); // エラーメッセージ
   const [session, setSession] = useState(null); // YOLOv5の推論セッション
 
-  // YOLOv5モデルのロード
   const loadYOLOModel = async () => {
     try {
       const response = await fetch("/models/yolov5s.onnx");
-      const buffer = await response.arrayBuffer(); // ArrayBufferとしてモデルを取得
+      if (!response.ok) {
+        throw new Error("モデルの読み込みに失敗しました。");
+      }
+      const buffer = await response.arrayBuffer();
       const yoloSession = new InferenceSession();
-      await yoloSession.loadModel(buffer); // モデルの読み込み
-      setSession(yoloSession); // セッションを設定
+      await yoloSession.loadModel(buffer);
+      setSession(yoloSession);
     } catch (err) {
-      setError("モデルのロードに失敗しました");
+      setError(`モデルのロードに失敗しました: ${err.message}`);
+      console.error("モデルロードエラー:", err);
     }
   };
+
 
   // カメラの起動
   const startVideo = async () => {
