@@ -164,7 +164,6 @@
 // }
 
 
-
 import { useRef, useState, useEffect } from "react";
 import { InferenceSession, Tensor } from "onnxjs"; // onnxjsライブラリ
 import { BrowserMultiFormatReader } from "@zxing/library"; // QRコード解析用
@@ -172,34 +171,34 @@ import { BrowserMultiFormatReader } from "@zxing/library"; // QRコード解析�
 const QR_CODE_CLASS_ID = 0; // QRコードのクラスID (モデルに合わせて調整)
 
 export default function QRScannerYOLO() {
-  const videoRef = useRef(null);
-  const [urls, setUrls] = useState({});
-  const [scanning, setScanning] = useState(false);
-  const [error, setError] = useState("");
-  const [session, setSession] = useState(null);
+  const videoRef = useRef(null); // <video>要素への参照
+  const [urls, setUrls] = useState({}); // QRコードのURLを保存する状態
+  const [scanning, setScanning] = useState(false); // カメラが起動しているかどうか
+  const [error, setError] = useState(""); // エラーメッセージ
+  const [session, setSession] = useState(null); // YOLOv5の推論セッション
 
   // YOLOv5モデルのロード
   const loadYOLOModel = async () => {
     try {
       const response = await fetch("/models/yolov5s.onnx");
-      const buffer = await response.arrayBuffer();
+      const buffer = await response.arrayBuffer(); // ArrayBufferとしてモデルを取得
       const yoloSession = new InferenceSession();
-      await yoloSession.loadModel(buffer);
-      setSession(yoloSession);
+      await yoloSession.loadModel(buffer); // モデルの読み込み
+      setSession(yoloSession); // セッションを設定
     } catch (err) {
       setError("モデルのロードに失敗しました");
     }
   };
 
-  // カメラ起動
+  // カメラの起動
   const startVideo = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
+        video: { facingMode: "environment" }, // 背面カメラを使用
       });
-      videoRef.current.srcObject = stream;
-      videoRef.current.play();
-      setScanning(true);
+      videoRef.current.srcObject = stream; // ビデオ要素にストリームを接続
+      videoRef.current.play(); // 再生を開始
+      setScanning(true); // スキャン状態に設定
     } catch (err) {
       setError("カメラの起動に失敗しました");
     }
@@ -280,7 +279,7 @@ export default function QRScannerYOLO() {
             if (result) {
               setUrls((prevUrls) => ({
                 ...prevUrls,
-                [result.text]: result.text,
+                [result.text]: result.text, // QRコードのURLを保存
               }));
             }
           } catch (err) {
@@ -294,25 +293,28 @@ export default function QRScannerYOLO() {
   };
 
   useEffect(() => {
-    loadYOLOModel();
+    loadYOLOModel(); // ページが読み込まれた時にYOLOモデルをロード
 
     const interval = setInterval(() => {
-      if (scanning) detectQR();
-    }, 500);
+      if (scanning) detectQR(); // カメラが起動している時にQRコード検出
+    }, 500); // 500msごとに検出
 
-    return () => clearInterval(interval);
+    return () => clearInterval(interval); // クリーンアップ
   }, [scanning]);
 
   return (
     <div>
       <h1>YOLOv5 QRコードスキャナー</h1>
-      <video ref={videoRef} style={{ width: "100%" }} />
-      <button onClick={startVideo}>カメラを起動</button>
-      {error && <p>{error}</p>}
+      <video ref={videoRef} style={{ width: "100%" }} />{" "}
+      {/* カメラ映像を表示 */}
+      <button onClick={startVideo}>カメラを起動</button>{" "}
+      {/* カメラ起動ボタン */}
+      {error && <p>{error}</p>} {/* エラーメッセージ */}
       <ul>
         {Object.keys(urls).map((key) => (
           <li key={key}>
-            <a href={urls[key]}>{urls[key]}</a>
+            <a href={urls[key]}>{urls[key]}</a>{" "}
+            {/* 解析したQRコードのURLを表示 */}
           </li>
         ))}
       </ul>
