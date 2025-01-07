@@ -29,59 +29,59 @@
 // import { BrowserMultiFormatReader } from "@zxing/library";
 
 
+
 import { useState, useEffect, useRef } from "react";
 import dynamic from "next/dynamic";
 
 // @zxing/library はクライアントサイドでのみ利用可能なため、dynamic importを使用
-const { BrowserMultiFormatReader } = dynamic(
-  () => import("@zxing/library").then((mod) => mod),
+const BrowserMultiFormatReader = dynamic(
+  () => import("@zxing/library").then((mod) => mod.BrowserMultiFormatReader),
   { ssr: false }
 );
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
-  const [firstUrl, setFirstUrl] = useState(null); // 最初に読み取ったURLを保存
+  const [firstUrl, setFirstUrl] = useState(null);
   const videoRef = useRef(null);
+  const [readerLoaded, setReaderLoaded] = useState(false); // リーダーがロードされたかどうか
 
   useEffect(() => {
-    if (!BrowserMultiFormatReader) return; // @zxing/library が読み込まれていない場合は実行しない
+    if (!BrowserMultiFormatReader) return; // BrowserMultiFormatReader がロードされていない場合はリターン
 
     const codeReader = new BrowserMultiFormatReader();
 
-    // カメラの設定を最適化
     const constraints = {
       video: {
         facingMode: "environment", // 背面カメラを使用
-        width: { ideal: 1280 }, // 解像度は1280x720
+        width: { ideal: 1280 },
         height: { ideal: 720 },
-        frameRate: { ideal: 30, max: 30 }, // フレームレートを下げる
+        frameRate: { ideal: 30, max: 30 },
       },
     };
 
-    // メディアデバイスからストリームを取得
-    navigator.mediaDevices
-      .getUserMedia(constraints)
-      .then((stream) => {
+    const getCameraStream = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoRef.current.srcObject = stream;
-        videoRef.current.play();
-      })
-      .catch((error) => {
+        // ストリームがセットされた後にカメラを再生
+        videoRef.current.play().catch((error) => {
+          console.error("カメラの再生に失敗しました:", error);
+        });
+      } catch (error) {
         console.error("カメラの取得に失敗しました:", error);
-      });
+        alert("カメラにアクセスできませんでした。");
+      }
+    };
 
-    // QRコードの読み取り設定
-    let lastScanTime = 0;
-    const scanInterval = 100; // ミリ秒単位の間隔。高すぎると性能低下。
+    // リーダーがロードされていればカメラを開始
+    if (readerLoaded) {
+      getCameraStream();
 
-    codeReader.decodeFromVideoDevice(
-      null,
-      videoRef.current,
-      (result, error) => {
-        const currentTime = Date.now();
-        if (currentTime - lastScanTime > scanInterval) {
-          lastScanTime = currentTime;
-
+      codeReader.decodeFromVideoDevice(
+        null,
+        videoRef.current,
+        (result, error) => {
           if (result) {
             const url = result.getText();
             const urlParams = new URLSearchParams(new URL(url).search);
@@ -92,7 +92,6 @@ export default function Home() {
               setFirstUrl(url);
             }
 
-            // 最初に読み取ったURLと同じURLだけを許可
             if (
               firstUrl &&
               url === firstUrl &&
@@ -106,10 +105,9 @@ export default function Home() {
                 [id]: url,
               }));
 
-              // 全てのQRコードが読み取れたらスキャンを停止
               if (Object.values(urls).filter(Boolean).length === 3) {
-                setScanning(false); // スキャン停止
-                codeReader.reset(); // 読み取り停止
+                setScanning(false);
+                codeReader.reset();
               }
             }
           }
@@ -118,18 +116,18 @@ export default function Home() {
             console.error("QRコードの読み取りエラー:", error);
           }
         }
-      }
-    );
+      );
+    }
 
     return () => {
-      // コンポーネントがアンマウントされた場合にストリームを停止
+      // コンポーネントのアンマウント時にカメラを停止
       if (videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject;
         const tracks = stream.getTracks();
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls, firstUrl]); // firstUrlも依存関係に追加
+  }, [urls, firstUrl, readerLoaded]); // readerLoaded を依存関係に追加
 
   const handleStopScanning = () => {
     setScanning(false);
