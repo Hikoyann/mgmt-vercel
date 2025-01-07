@@ -28,17 +28,13 @@
 
 
 
-
 import { useRef, useState, useEffect } from "react";
-import { useRouter } from "next/router";
-import { QrReader } from "react-qr-reader";
-import Head from "next/head";
-import { Header } from "@/components/Header";
 import { BrowserMultiFormatReader } from "@zxing/library";
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
+  const [firstUrl, setFirstUrl] = useState(null); // 最初に読み取ったURLを保存
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -50,7 +46,7 @@ export default function Home() {
         facingMode: "environment", // 背面カメラを使用
         width: { ideal: 1280 }, // 解像度は1280x720
         height: { ideal: 720 },
-        frameRate: { ideal: 60, max: 60 }, // 高フレームレートで素早く読み取る
+        frameRate: { ideal: 30, max: 30 }, // フレームレートを下げる
       },
     };
 
@@ -82,8 +78,20 @@ export default function Home() {
             const urlParams = new URLSearchParams(new URL(url).search);
             const id = urlParams.get("id");
 
-            // すでにQRコードIDが読み取られている場合は無視
-            if (id && id >= 1 && id <= 4 && !urls[id]) {
+            // 最初に読み取ったURLがまだ設定されていない場合はそれを設定
+            if (!firstUrl) {
+              setFirstUrl(url);
+            }
+
+            // 最初に読み取ったURLと同じURLだけを許可
+            if (
+              firstUrl &&
+              url === firstUrl &&
+              id &&
+              id >= 1 &&
+              id <= 4 &&
+              !urls[id]
+            ) {
               setUrls((prevUrls) => ({
                 ...prevUrls,
                 [id]: url,
@@ -112,7 +120,7 @@ export default function Home() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls]);
+  }, [urls, firstUrl]); // firstUrlも依存関係に追加
 
   const handleStopScanning = () => {
     setScanning(false);
@@ -133,14 +141,17 @@ export default function Home() {
               <li key={id}>
                 <span className="font-bold">QRコード {id}:</span>{" "}
                 {urls[id] ? (
-                  <a
-                    href={urls[id]}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline"
-                  >
-                    {urls[id]}
-                  </a>
+                  <>
+                    <a
+                      href={urls[id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      {urls[id]}
+                    </a>
+                    <span className="text-gray-500"> (ID: {id})</span>
+                  </>
                 ) : (
                   <span className="text-gray-500">スキャン結果待ち...</span>
                 )}
