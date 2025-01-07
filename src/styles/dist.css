@@ -478,6 +478,9 @@ video {
 .flex {
   display: flex;
 }
+.h-96 {
+  height: 24rem;
+}
 .h-auto {
   height: auto;
 }

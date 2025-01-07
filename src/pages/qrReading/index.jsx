@@ -234,8 +234,8 @@ export default function Home() {
       const context = canvas.getContext("2d");
 
       // ビデオのサイズを取得
-      const videoWidth = videoRef.current.videoWidth;
-      const videoHeight = videoRef.current.videoHeight;
+      const videoWidth = videoRef.current.videoWidth || 1280;
+      const videoHeight = videoRef.current.videoHeight || 720;
       canvas.width = videoWidth;
       canvas.height = videoHeight;
 
@@ -281,7 +281,7 @@ export default function Home() {
         }
 
         // 枠内のQRコードが検出された場合のみ認識する
-        drawFrames();
+        drawFrames(); // QRコードが検出された時に枠を描画
 
         // IDが1〜4の範囲であれば、そのURLを保存
         if (id && id >= 1 && id <= 4) {
@@ -319,18 +319,19 @@ export default function Home() {
     };
   }, [firstUrl, urls]);
 
+
   const handleStopScanning = () => {
     setScanning(false);
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-between">
       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
       <div className="w-full max-w-4xl relative">
         {/* カメラ映像 */}
         <video
           ref={videoRef}
-          className="w-full h-auto bg-black rounded object-cover" // object-cover を追加
+          className="w-full h-96 bg-black rounded object-cover" // ビデオの高さを96に設定し、小さく表示
         />
 
         {/* QRコードの枠を描画するキャンバス */}
