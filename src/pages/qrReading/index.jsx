@@ -163,9 +163,15 @@
 //   );
 // }
 
+
+
+
+
 import { useRef, useState, useEffect } from "react";
-import { InferenceSession } from "onnxjs"; // onnxjsライブラリをインポート
+import { InferenceSession, Tensor } from "onnxjs"; // onnxjsライブラリをインポート
 import { BrowserMultiFormatReader } from "@zxing/library"; // QRコード解析用
+
+const QR_CODE_CLASS_ID = 0; // QRコードのクラスID (実際のモデルに合わせて変更)
 
 export default function QRScannerYOLO() {
   const videoRef = useRef(null);
@@ -250,7 +256,7 @@ export default function QRScannerYOLO() {
 
     try {
       const output = await session.run({ input: yoloInput });
-      const detections = output["detection"]; // モデルに応じたキー名に変更
+      const detections = output.data[0]; // 出力のインデックスを調整
 
       for (const detection of detections) {
         const [x, y, width, height, confidence, classIndex] = detection;
