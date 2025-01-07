@@ -10,12 +10,14 @@
     "build:css": "postcss ./src/styles/styles.css -o ./src/styles/dist.css --verbose"
   },
   "dependencies": {
+    "@tensorflow-models/coco-ssd": "^2.2.3",
     "@tensorflow/tfjs": "^4.22.0",
     "@zxing/library": "^0.21.3",
     "dotenv": "^16.4.5",
     "firebase": "^10.13.0",
     "jsqr": "^1.4.0",
     "next": "14.2.6",
+    "onnxjs": "^0.1.8",
     "opencv.js": "^1.2.1",
     "qrcode": "^1.5.4",
     "qrcode.react": "^4.0.1",
