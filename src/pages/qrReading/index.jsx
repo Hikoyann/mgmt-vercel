@@ -164,7 +164,6 @@
 // }
 
 
-
 import { useRef, useState, useEffect } from "react";
 import { InferenceSession, Tensor } from "onnxjs"; // onnxjsライブラリ
 import { BrowserMultiFormatReader } from "@zxing/library"; // QRコード解析用
@@ -177,6 +176,7 @@ export default function QRScannerYOLO() {
   const [scanning, setScanning] = useState(false); // カメラが起動しているかどうか
   const [error, setError] = useState(""); // エラーメッセージ
   const [session, setSession] = useState(null); // YOLOv5の推論セッション
+  const [isCameraActive, setIsCameraActive] = useState(false); // カメラの状態
 
   // YOLOv5モデルのロード
   const loadYOLOModel = async () => {
@@ -204,6 +204,7 @@ export default function QRScannerYOLO() {
       videoRef.current.srcObject = stream; // ビデオ要素にストリームを接続
       videoRef.current.play(); // 再生を開始
       setScanning(true); // スキャン状態に設定
+      setIsCameraActive(true); // カメラが起動した状態に設定
     } catch (err) {
       setError("カメラの起動に失敗しました");
     }
@@ -308,17 +309,31 @@ export default function QRScannerYOLO() {
   }, [scanning]);
 
   return (
-    <div>
-      <h1>YOLOv5 QRコードスキャナー</h1>
-      <video ref={videoRef} style={{ width: "100%" }} />{" "}
-      {/* カメラ映像を表示 */}
-      <button onClick={startVideo}>カメラを起動</button>{" "}
-      {/* カメラ起動ボタン */}
-      {error && <p>{error}</p>} {/* エラーメッセージ */}
-      <ul>
+    <div className="flex flex-col items-center p-4">
+      <h1 className="text-2xl mb-4">YOLOv5 QRコードスキャナー</h1>
+      <div className="relative mb-4">
+        {/* カメラ映像 */}
+        <video ref={videoRef} style={{ width: "100%" }} />
+        {!isCameraActive && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-50 text-white">
+            カメラがオフです
+          </div>
+        )}
+      </div>
+      <button
+        onClick={startVideo}
+        className="bg-blue-500 text-white py-2 px-4 rounded"
+      >
+        カメラを起動
+      </button>
+      {error && <p className="text-red-500 mt-2">{error}</p>}{" "}
+      {/* エラーメッセージ */}
+      <ul className="mt-4">
         {Object.keys(urls).map((key) => (
           <li key={key}>
-            <a href={urls[key]}>{urls[key]}</a>{" "}
+            <a href={urls[key]} className="text-blue-600">
+              {urls[key]}
+            </a>{" "}
             {/* 解析したQRコードのURLを表示 */}
           </li>
         ))}
