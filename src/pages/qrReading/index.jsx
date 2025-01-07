@@ -29,28 +29,19 @@
 // import { BrowserMultiFormatReader } from "@zxing/library";
 
 
-
 import { useState, useEffect, useRef } from "react";
-import dynamic from "next/dynamic";
-
-// @zxing/library はクライアントサイドでのみ利用可能なため、dynamic importを使用
-const BrowserMultiFormatReader = dynamic(
-  () => import("@zxing/library").then((mod) => mod.BrowserMultiFormatReader),
-  { ssr: false }
-);
+import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法に戻します
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
   const [firstUrl, setFirstUrl] = useState(null);
   const videoRef = useRef(null);
-  const [readerLoaded, setReaderLoaded] = useState(false); // リーダーがロードされたかどうか
 
   useEffect(() => {
-    if (!BrowserMultiFormatReader) return; // BrowserMultiFormatReader がロードされていない場合はリターン
-
     const codeReader = new BrowserMultiFormatReader();
 
+    // カメラの設定
     const constraints = {
       video: {
         facingMode: "environment", // 背面カメラを使用
@@ -60,11 +51,11 @@ export default function Home() {
       },
     };
 
+    // メディアデバイスからストリームを取得
     const getCameraStream = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
         videoRef.current.srcObject = stream;
-        // ストリームがセットされた後にカメラを再生
         videoRef.current.play().catch((error) => {
           console.error("カメラの再生に失敗しました:", error);
         });
@@ -74,60 +65,60 @@ export default function Home() {
       }
     };
 
-    // リーダーがロードされていればカメラを開始
-    if (readerLoaded) {
-      getCameraStream();
+    getCameraStream();
 
-      codeReader.decodeFromVideoDevice(
-        null,
-        videoRef.current,
-        (result, error) => {
-          if (result) {
-            const url = result.getText();
-            const urlParams = new URLSearchParams(new URL(url).search);
-            const id = urlParams.get("id");
+    // QRコードの読み取り設定
+    codeReader.decodeFromVideoDevice(
+      null,
+      videoRef.current,
+      (result, error) => {
+        if (result) {
+          const url = result.getText();
+          const urlParams = new URLSearchParams(new URL(url).search);
+          const id = urlParams.get("id");
 
-            // 最初に読み取ったURLがまだ設定されていない場合はそれを設定
-            if (!firstUrl) {
-              setFirstUrl(url);
-            }
-
-            if (
-              firstUrl &&
-              url === firstUrl &&
-              id &&
-              id >= 1 &&
-              id <= 4 &&
-              !urls[id]
-            ) {
-              setUrls((prevUrls) => ({
-                ...prevUrls,
-                [id]: url,
-              }));
-
-              if (Object.values(urls).filter(Boolean).length === 3) {
-                setScanning(false);
-                codeReader.reset();
-              }
-            }
+          // 最初に読み取ったURLがまだ設定されていない場合はそれを設定
+          if (!firstUrl) {
+            setFirstUrl(url);
           }
 
-          if (error && error !== "NotFoundError") {
-            console.error("QRコードの読み取りエラー:", error);
+          // 最初に読み取ったURLと一致したQRコードだけを許可
+          if (
+            firstUrl &&
+            url === firstUrl &&
+            id &&
+            id >= 1 &&
+            id <= 4 &&
+            !urls[id]
+          ) {
+            setUrls((prevUrls) => ({
+              ...prevUrls,
+              [id]: url,
+            }));
+
+            // すべてのQRコードが読み取れたらスキャンを停止
+            if (Object.values(urls).filter(Boolean).length === 3) {
+              setScanning(false);
+              codeReader.reset(); // 読み取り停止
+            }
           }
         }
-      );
-    }
+
+        if (error && error !== "NotFoundError") {
+          console.error("QRコードの読み取りエラー:", error);
+        }
+      }
+    );
 
     return () => {
-      // コンポーネントのアンマウント時にカメラを停止
+      // コンポーネントがアンマウントされた場合にカメラを停止
       if (videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject;
         const tracks = stream.getTracks();
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls, firstUrl, readerLoaded]); // readerLoaded を依存関係に追加
+  }, [urls, firstUrl]); // 読み取り結果に応じて依存関係を設定
 
   const handleStopScanning = () => {
     setScanning(false);
