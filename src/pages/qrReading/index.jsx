@@ -28,7 +28,6 @@
 
 // import { BrowserMultiFormatReader } from "@zxing/library";
 
-
 import { useState, useEffect, useRef } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法に戻します
 
@@ -118,7 +117,7 @@ export default function Home() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls, firstUrl]); // 読み取り結果に応じて依存関係を設定
+  }, [urls, firstUrl]);
 
   const handleStopScanning = () => {
     setScanning(false);
@@ -129,7 +128,10 @@ export default function Home() {
       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
       <div className="w-full max-w-4xl">
         {/* カメラ映像 */}
-        <video ref={videoRef} className="w-full bg-black rounded" />
+        <video
+          ref={videoRef}
+          className="w-full h-auto bg-black rounded object-cover" // object-cover を追加
+        />
 
         {/* 結果表示 */}
         <div className="mt-4 bg-white shadow rounded p-4">
