@@ -178,7 +178,7 @@ export default function QRScannerYOLO() {
   const loadYOLOModel = async () => {
     try {
       const yoloSession = new InferenceSession();
-      await yoloSession.loadModel("/models/yolov5.onnx"); // public/models/yolov5.onnxを指定
+      await yoloSession.loadModel("/models/yolov5s.onnx"); // public/models/yolov5.onnxを指定
       setSession(yoloSession);
       console.log("YOLOv5モデルがロードされました");
     } catch (err) {
