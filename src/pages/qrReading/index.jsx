@@ -164,17 +164,19 @@
 // }
 
 
+
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 
 export default function Home() {
   const videoRef = useRef(null);
-  const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null }); // ID 別に URL を保存
+  const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null }); // ID別の結果保存
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
     let videoStream = null;
 
+    // OpenCV.jsのロード確認
     const waitForOpenCV = () =>
       new Promise((resolve) => {
         const checkInterval = setInterval(() => {
@@ -236,7 +238,7 @@ export default function Home() {
                 const url = new URL(result);
                 const id = url.searchParams.get("id");
 
-                // IDが 1 ~ 4 の範囲にある場合のみ処理
+                // IDが1～4の場合のみ処理
                 if (id && id >= 1 && id <= 4 && !urls[id]) {
                   setUrls((prevUrls) => ({
                     ...prevUrls,
@@ -279,11 +281,19 @@ export default function Home() {
         <title>QRコードスキャナー</title>
         <script async src="https://docs.opencv.org/4.x/opencv.js"></script>
       </Head>
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-start p-4">
         <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
-        <div className="w-full max-w-4xl">
-          <video ref={videoRef} className="w-full bg-black rounded" autoPlay />
+        <div className="w-full max-w-md">
+          {/* カメラ映像を指定された領域に表示 */}
+          <div className="relative w-full h-64 bg-black rounded overflow-hidden">
+            <video
+              ref={videoRef}
+              className="absolute w-full h-full object-cover"
+              autoPlay
+            />
+          </div>
 
+          {/* スキャン結果を表示 */}
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">スキャン結果:</h2>
             <ul className="list-disc list-inside mt-2">
@@ -307,10 +317,11 @@ export default function Home() {
             </ul>
           </div>
 
+          {/* スキャン停止ボタン */}
           {scanning && (
             <button
               onClick={handleStopScanning}
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded w-full"
             >
               スキャン停止
             </button>
