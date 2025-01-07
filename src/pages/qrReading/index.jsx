@@ -164,48 +164,54 @@
 // }
 
 
-
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 
 export default function Home() {
   const videoRef = useRef(null);
-  const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null }); // ID別の結果保存
-  const [scanning, setScanning] = useState(true);
+  const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
+  const [scanning, setScanning] = useState(false); // 初期はスキャン停止状態
+  const [error, setError] = useState("");
+
+  const startVideo = async () => {
+    try {
+      const constraints = {
+        video: {
+          facingMode: "environment",
+          width: { ideal: 1280 },
+          height: { ideal: 720 },
+        },
+      };
+      const videoStream = await navigator.mediaDevices.getUserMedia(
+        constraints
+      );
+      videoRef.current.srcObject = videoStream;
+      videoRef.current.play();
+      setScanning(true); // スキャンを開始
+    } catch (err) {
+      console.error("カメラの取得に失敗しました:", err);
+      setError(
+        "カメラの起動に失敗しました。ブラウザの設定を確認してください。"
+      );
+    }
+  };
+
+  const stopVideo = () => {
+    if (videoRef.current && videoRef.current.srcObject) {
+      const tracks = videoRef.current.srcObject.getTracks();
+      tracks.forEach((track) => track.stop());
+    }
+    setScanning(false); // スキャンを停止
+  };
 
   useEffect(() => {
-    let videoStream = null;
-
-    // OpenCV.jsのロード確認
-    const waitForOpenCV = () =>
-      new Promise((resolve) => {
-        const checkInterval = setInterval(() => {
-          if (window.cv) {
-            clearInterval(checkInterval);
-            resolve();
-          }
-        }, 100);
-      });
-
-    const startVideo = async () => {
-      try {
-        const constraints = {
-          video: {
-            facingMode: "environment",
-            width: { ideal: 1280 },
-            height: { ideal: 720 },
-          },
-        };
-        videoStream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoRef.current.srcObject = videoStream;
-        videoRef.current.play();
-      } catch (error) {
-        console.error("カメラの取得に失敗しました:", error);
-      }
-    };
+    if (!scanning) return;
 
     const detectQR = async () => {
-      await waitForOpenCV();
+      if (!window.cv) {
+        console.error("OpenCV.js がロードされていません。");
+        return;
+      }
 
       const video = videoRef.current;
       const canvas = document.createElement("canvas");
@@ -226,33 +232,35 @@ export default function Home() {
           );
           const points = new window.cv.Mat();
 
-          const detected = qrDetector.detectMulti(src, points);
+          try {
+            const detected = qrDetector.detectMulti(src, points);
+            if (detected) {
+              const qrCodes = qrDetector.decodeMulti(src, points);
 
-          if (detected) {
-            const qrCodes = qrDetector.decodeMulti(src, points);
+              for (let i = 0; i < qrCodes.size(); i++) {
+                const result = qrCodes.get(i).data;
 
-            for (let i = 0; i < qrCodes.size(); i++) {
-              const result = qrCodes.get(i).data;
+                try {
+                  const url = new URL(result);
+                  const id = url.searchParams.get("id");
 
-              try {
-                const url = new URL(result);
-                const id = url.searchParams.get("id");
-
-                // IDが1～4の場合のみ処理
-                if (id && id >= 1 && id <= 4 && !urls[id]) {
-                  setUrls((prevUrls) => ({
-                    ...prevUrls,
-                    [id]: result,
-                  }));
+                  if (id && id >= 1 && id <= 4 && !urls[id]) {
+                    setUrls((prevUrls) => ({
+                      ...prevUrls,
+                      [id]: result,
+                    }));
+                  }
+                } catch (err) {
+                  console.warn("URLの解析に失敗:", err);
                 }
-              } catch (error) {
-                console.warn("URLの解析に失敗:", error);
               }
             }
+          } catch (err) {
+            console.error("QRコードの解析に失敗しました:", err);
+          } finally {
+            src.delete();
+            points.delete();
           }
-
-          src.delete();
-          points.delete();
         }
 
         requestAnimationFrame(processFrame);
@@ -261,19 +269,8 @@ export default function Home() {
       processFrame();
     };
 
-    startVideo().then(() => detectQR());
-
-    return () => {
-      if (videoStream) {
-        const tracks = videoStream.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
+    detectQR();
   }, [scanning, urls]);
-
-  const handleStopScanning = () => {
-    setScanning(false);
-  };
 
   return (
     <>
@@ -283,17 +280,35 @@ export default function Home() {
       </Head>
       <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-start p-4">
         <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
+
         <div className="w-full max-w-md">
-          {/* カメラ映像を指定された領域に表示 */}
           <div className="relative w-full h-64 bg-black rounded overflow-hidden">
             <video
               ref={videoRef}
               className="absolute w-full h-full object-cover"
               autoPlay
+              muted
             />
           </div>
 
-          {/* スキャン結果を表示 */}
+          {error && <div className="text-red-500 mt-4">{error}</div>}
+
+          {!scanning ? (
+            <button
+              onClick={startVideo}
+              className="mt-4 bg-blue-500 text-white px-4 py-2 rounded w-full"
+            >
+              カメラを起動
+            </button>
+          ) : (
+            <button
+              onClick={stopVideo}
+              className="mt-4 bg-red-500 text-white px-4 py-2 rounded w-full"
+            >
+              スキャン停止
+            </button>
+          )}
+
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">スキャン結果:</h2>
             <ul className="list-disc list-inside mt-2">
@@ -316,16 +331,6 @@ export default function Home() {
               ))}
             </ul>
           </div>
-
-          {/* スキャン停止ボタン */}
-          {scanning && (
-            <button
-              onClick={handleStopScanning}
-              className="mt-4 bg-red-500 text-white px-4 py-2 rounded w-full"
-            >
-              スキャン停止
-            </button>
-          )}
         </div>
       </div>
     </>
