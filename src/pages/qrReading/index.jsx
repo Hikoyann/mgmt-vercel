@@ -165,13 +165,11 @@
 
 
 
-
-
 import { useRef, useState, useEffect } from "react";
-import { InferenceSession, Tensor } from "onnxjs"; // onnxjsライブラリをインポート
+import { InferenceSession, Tensor } from "onnxjs"; // onnxjsライブラリ
 import { BrowserMultiFormatReader } from "@zxing/library"; // QRコード解析用
 
-const QR_CODE_CLASS_ID = 0; // QRコードのクラスID (実際のモデルに合わせて変更)
+const QR_CODE_CLASS_ID = 0; // QRコードのクラスID (モデルに合わせて調整)
 
 export default function QRScannerYOLO() {
   const videoRef = useRef(null);
@@ -183,39 +181,28 @@ export default function QRScannerYOLO() {
   // YOLOv5モデルのロード
   const loadYOLOModel = async () => {
     try {
+      const response = await fetch("/models/yolov5s.onnx");
+      const buffer = await response.arrayBuffer();
       const yoloSession = new InferenceSession();
-      await yoloSession.loadModel("/models/yolov5s.onnx"); // public/models/yolov5.onnxを指定
+      await yoloSession.loadModel(buffer);
       setSession(yoloSession);
-      console.log("YOLOv5モデルがロードされました");
     } catch (err) {
-      console.error("YOLOv5モデルのロードに失敗:", err);
       setError("モデルのロードに失敗しました");
     }
   };
 
-  // カメラを起動
+  // カメラ起動
   const startVideo = async () => {
     try {
-      const constraints = {
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: "environment" },
-      };
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      });
       videoRef.current.srcObject = stream;
       videoRef.current.play();
       setScanning(true);
     } catch (err) {
-      console.error("カメラの起動に失敗:", err);
       setError("カメラの起動に失敗しました");
     }
-  };
-
-  // スキャン停止
-  const stopVideo = () => {
-    if (videoRef.current && videoRef.current.srcObject) {
-      const tracks = videoRef.current.srcObject.getTracks();
-      tracks.forEach((track) => track.stop());
-    }
-    setScanning(false);
   };
 
   // QRコード検出
@@ -238,13 +225,13 @@ export default function QRScannerYOLO() {
     // 画像をYOLOv5モデルの入力形式に変換
     for (let i = 0; i < imageData.data.length; i += 4) {
       const [r, g, b] = [
-        imageData.data[i],
-        imageData.data[i + 1],
-        imageData.data[i + 2],
+        imageData.data[i] / 255,
+        imageData.data[i + 1] / 255,
+        imageData.data[i + 2] / 255,
       ];
-      inputTensor[(i / 4) * 3 + 0] = r / 255;
-      inputTensor[(i / 4) * 3 + 1] = g / 255;
-      inputTensor[(i / 4) * 3 + 2] = b / 255;
+      inputTensor[(i / 4) * 3 + 0] = r;
+      inputTensor[(i / 4) * 3 + 1] = g;
+      inputTensor[(i / 4) * 3 + 2] = b;
     }
 
     const yoloInput = new Tensor(inputTensor, "float32", [
@@ -256,13 +243,12 @@ export default function QRScannerYOLO() {
 
     try {
       const output = await session.run({ input: yoloInput });
-      const detections = output.data[0]; // 出力のインデックスを調整
+      const detections = output.data[0];
 
-      for (const detection of detections) {
+      detections.forEach(async (detection) => {
         const [x, y, width, height, confidence, classIndex] = detection;
 
         if (confidence > 0.5 && classIndex === QR_CODE_CLASS_ID) {
-          // QRコード領域を切り抜く
           const [x1, y1, x2, y2] = [
             x * canvas.width,
             y * canvas.height,
@@ -270,6 +256,7 @@ export default function QRScannerYOLO() {
             (y + height) * canvas.height,
           ];
 
+          // QRコード領域を切り出す
           canvas.width = x2 - x1;
           canvas.height = y2 - y1;
           ctx.drawImage(
@@ -290,7 +277,7 @@ export default function QRScannerYOLO() {
 
           try {
             const result = await qrReader.decodeFromImage(image);
-            if (result && !urls[result.text]) {
+            if (result) {
               setUrls((prevUrls) => ({
                 ...prevUrls,
                 [result.text]: result.text,
@@ -300,7 +287,7 @@ export default function QRScannerYOLO() {
             console.warn("QRコードの解析に失敗:", err);
           }
         }
-      }
+      });
     } catch (err) {
       console.error("YOLOv5の推論に失敗:", err);
     }
@@ -319,9 +306,8 @@ export default function QRScannerYOLO() {
   return (
     <div>
       <h1>YOLOv5 QRコードスキャナー</h1>
-      <video ref={videoRef} style={{ width: "100%", height: "auto" }} />
+      <video ref={videoRef} style={{ width: "100%" }} />
       <button onClick={startVideo}>カメラを起動</button>
-      <button onClick={stopVideo}>スキャン停止</button>
       {error && <p>{error}</p>}
       <ul>
         {Object.keys(urls).map((key) => (
