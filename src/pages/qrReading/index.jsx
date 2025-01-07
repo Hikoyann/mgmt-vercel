@@ -164,19 +164,17 @@
 // }
 
 
-
 import { useEffect, useRef, useState } from "react";
 import Head from "next/head";
 
 export default function Home() {
   const videoRef = useRef(null);
-  const [urls, setUrls] = useState([]);
+  const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null }); // ID 別に URL を保存
   const [scanning, setScanning] = useState(true);
 
   useEffect(() => {
     let videoStream = null;
 
-    // OpenCV.js のロードが完了したか確認
     const waitForOpenCV = () =>
       new Promise((resolve) => {
         const checkInterval = setInterval(() => {
@@ -189,7 +187,6 @@ export default function Home() {
 
     const startVideo = async () => {
       try {
-        // カメラ映像を取得
         const constraints = {
           video: {
             facingMode: "environment",
@@ -230,18 +227,25 @@ export default function Home() {
           const detected = qrDetector.detectMulti(src, points);
 
           if (detected) {
-            const decodedResults = [];
             const qrCodes = qrDetector.decodeMulti(src, points);
 
             for (let i = 0; i < qrCodes.size(); i++) {
               const result = qrCodes.get(i).data;
-              if (!urls.includes(result)) {
-                decodedResults.push(result);
-              }
-            }
 
-            if (decodedResults.length > 0) {
-              setUrls((prevUrls) => [...prevUrls, ...decodedResults]);
+              try {
+                const url = new URL(result);
+                const id = url.searchParams.get("id");
+
+                // IDが 1 ~ 4 の範囲にある場合のみ処理
+                if (id && id >= 1 && id <= 4 && !urls[id]) {
+                  setUrls((prevUrls) => ({
+                    ...prevUrls,
+                    [id]: result,
+                  }));
+                }
+              } catch (error) {
+                console.warn("URLの解析に失敗:", error);
+              }
             }
           }
 
@@ -263,7 +267,7 @@ export default function Home() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [scanning]);
+  }, [scanning, urls]);
 
   const handleStopScanning = () => {
     setScanning(false);
@@ -283,16 +287,21 @@ export default function Home() {
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">スキャン結果:</h2>
             <ul className="list-disc list-inside mt-2">
-              {urls.map((url, index) => (
-                <li key={index}>
-                  <a
-                    href={url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-500 underline"
-                  >
-                    {url}
-                  </a>
+              {[1, 2, 3, 4].map((id) => (
+                <li key={id}>
+                  <span className="font-bold">QRコード {id}:</span>{" "}
+                  {urls[id] ? (
+                    <a
+                      href={urls[id]}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-500 underline"
+                    >
+                      {urls[id]}
+                    </a>
+                  ) : (
+                    <span className="text-gray-500">スキャン結果待ち...</span>
+                  )}
                 </li>
               ))}
             </ul>
