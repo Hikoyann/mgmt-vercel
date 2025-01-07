@@ -27,14 +27,13 @@
 
 
 
-
 import { useState, useEffect, useRef } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
 
 export default function Home() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
-  const [url, setUrl] = useState(null); // 最初に取得したURLを格納
+  const [firstUrl, setFirstUrl] = useState(null); // 最初に取得したURLを格納
   const videoRef = useRef(null);
 
   useEffect(() => {
@@ -76,9 +75,9 @@ export default function Home() {
           const urlParams = new URLSearchParams(new URL(scannedUrl).search);
           const id = urlParams.get("id");
 
-          // 最初のURLを取得して保存
-          if (!url) {
-            setUrl(scannedUrl); // 最初に読み取ったURLを保存
+          // 最初に読み取ったURLを保存
+          if (!firstUrl) {
+            setFirstUrl(scannedUrl); // 最初に読み取ったURLを保存
           }
 
           // IDが1〜4の範囲であれば、そのURLを保存
@@ -94,7 +93,7 @@ export default function Home() {
                   codeReader.reset(); // QRコード読み取りを停止
 
                   // すべて読み取れたら最初のURLへ移動
-                  window.location.href = scannedUrl; // 最初に読み取ったURLへ移動
+                  window.location.href = firstUrl; // 最初に読み取ったURLへ移動
                 }
 
                 return updatedUrls;
@@ -117,7 +116,7 @@ export default function Home() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls, url]); // `urls` と `url` が更新されるたびに再度QRコード読み取りを開始
+  }, [firstUrl, urls]);
 
   const handleStopScanning = () => {
     setScanning(false);
@@ -134,17 +133,17 @@ export default function Home() {
         />
 
         {/* 最初のURLを表示 */}
-        {url && (
+        {firstUrl && (
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">最初に取得したURL:</h2>
             <p>
               <a
-                href={url}
+                href={firstUrl}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="text-blue-500 underline"
               >
-                {url}
+                {firstUrl}
               </a>
             </p>
           </div>
