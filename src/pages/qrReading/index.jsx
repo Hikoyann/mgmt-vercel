@@ -287,6 +287,7 @@ export default function Home() {
               ref={videoRef}
               className="absolute w-full h-full object-cover"
               autoPlay
+              playsInline
               muted
             />
           </div>
