@@ -190,64 +190,98 @@
 //   );
 // }
 
-
-import React, { useState } from "react";
-import dynamic from "next/dynamic";
-
-// QRコードスキャナーを動的に読み込む
-const QrReader = dynamic(() => import("react-qr-scanner"), { ssr: false });
+import React, { useEffect, useRef, useState } from "react";
+import jsQR from "jsqr";
 
 const QrCodePage = () => {
-  const [scannedIds, setScannedIds] = useState(new Set()); // 読み取ったID番号のセット
-  const [message, setMessage] = useState(""); // ステータスメッセージ
+  const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [scannedIds, setScannedIds] = useState(new Set());
+  const [baseUrl, setBaseUrl] = useState(null);
+  const [message, setMessage] = useState("");
 
-  // QRコード読み取り時の処理
-  const handleScan = (data) => {
-    if (data) {
-      const url = data.text; // 読み取ったURL
-      const baseUrl = "https://example.com"; // QRコードのベースURL（例）
-      const idParam = "id="; // IDパラメータのキー
-      if (url.startsWith(baseUrl) && url.includes(idParam)) {
-        const id = url.split(idParam)[1]; // ID番号を抽出
-        if (id && !scannedIds.has(id)) {
-          setScannedIds((prevIds) => new Set([...prevIds, id])); // ID番号をセットに追加
-          setMessage(`ID ${id} を認識しました！`);
-
-          // すべてのID (1～4) を認識したらURLにリダイレクト
-          if ([...scannedIds, id].length === 4) {
-            setMessage("すべてのQRコードを認識しました。リダイレクト中...");
-            window.location.href = url; // URL へ移動
-          }
-        } else {
-          setMessage(`ID ${id} はすでに認識済みです。`);
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: { facingMode: "environment" },
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+          videoRef.current.play();
         }
-      } else {
-        setMessage("無効なQRコードです。");
+      } catch (error) {
+        console.error("カメラの起動に失敗しました:", error);
+        setMessage("カメラのアクセスに失敗しました。");
       }
-    }
-  };
+    };
 
-  const handleError = (error) => {
-    console.error("QRコード読み取りエラー:", error);
-    setMessage("QRコードの読み取り中にエラーが発生しました。");
-  };
+    startCamera();
+    return () => {
+      if (videoRef.current && videoRef.current.srcObject) {
+        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    const detectQrCodes = () => {
+      if (!videoRef.current || !canvasRef.current) return;
+
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
+
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const code = jsQR(imageData.data, imageData.width, imageData.height);
+
+      if (code) {
+        const url = code.data;
+        const idParam = "id=";
+
+        if (url.includes(idParam)) {
+          const id = url.split(idParam)[1];
+
+          if (!baseUrl) {
+            setBaseUrl(url.split("?")[0]);
+            setMessage(`ベースURLを設定しました: ${url.split("?")[0]}`);
+          }
+
+          if (baseUrl && url.startsWith(baseUrl)) {
+            if (!scannedIds.has(id)) {
+              setScannedIds((prevIds) => new Set([...prevIds, id]));
+              setMessage(`ID ${id} を認識しました！`);
+
+              if ([...scannedIds, id].length === 4) {
+                setMessage("すべてのQRコードを認識しました。リダイレクト中...");
+                window.location.href = `${baseUrl}?id=${id}`;
+              }
+            }
+          }
+        }
+      }
+
+      requestAnimationFrame(detectQrCodes);
+    };
+
+    requestAnimationFrame(detectQrCodes);
+  }, [baseUrl, scannedIds]);
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
-      <div className="bg-white shadow-md rounded-lg p-4">
-        <QrReader
-          delay={300}
-          style={{ width: "100%" }}
-          onError={handleError}
-          onScan={handleScan}
-        />
-      </div>
+      <video ref={videoRef} className="hidden" />
+      <canvas ref={canvasRef} className="w-full h-auto border" />
       <div className="mt-4 text-center">
         {message && <p className="text-blue-500">{message}</p>}
         <p className="text-gray-700 mt-2">
           認識済みID: {[...scannedIds].join(", ") || "なし"}
         </p>
+        {baseUrl && <p className="text-gray-500 mt-1">ベースURL: {baseUrl}</p>}
       </div>
     </div>
   );
