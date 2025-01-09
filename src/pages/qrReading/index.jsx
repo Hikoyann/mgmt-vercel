@@ -283,8 +283,16 @@ const QrCodePage = () => {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
-      <video ref={videoRef} className="w-full h-auto border" />
-      <canvas ref={canvasRef} className="w-full h-auto border" />
+      <video
+        ref={videoRef}
+        className="w-full h-full absolute top-0 left-0"
+        style={{ objectFit: "cover" }}
+      />
+      <canvas
+        ref={canvasRef}
+        className="absolute top-0 left-0 w-full h-full"
+        style={{ zIndex: 2 }}
+      />
       <div className="mt-4 text-center">
         {message && <p className="text-blue-500">{message}</p>}
         <p className="text-gray-700 mt-2">
