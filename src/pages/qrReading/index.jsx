@@ -190,6 +190,9 @@
 //   );
 // }
 
+
+
+
 import React, { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 
@@ -204,7 +207,7 @@ const QrCodePage = () => {
     const startCamera = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" },
+          video: { facingMode: "environment" }, // 背面カメラを使用
         });
         if (videoRef.current) {
           videoRef.current.srcObject = stream;
@@ -232,8 +235,10 @@ const QrCodePage = () => {
       const canvas = canvasRef.current;
       const ctx = canvas.getContext("2d");
 
+      // カメラのサイズに合わせてcanvasを設定
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
+
       ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
 
       const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
@@ -246,17 +251,21 @@ const QrCodePage = () => {
         if (url.includes(idParam)) {
           const id = url.split(idParam)[1];
 
+          // 最初に認識したQRコードのベースURLを設定
           if (!baseUrl) {
             setBaseUrl(url.split("?")[0]);
             setMessage(`ベースURLを設定しました: ${url.split("?")[0]}`);
           }
 
+          // ベースURLと一致するQRコードか確認
           if (baseUrl && url.startsWith(baseUrl)) {
             if (!scannedIds.has(id)) {
               setScannedIds((prevIds) => new Set([...prevIds, id]));
               setMessage(`ID ${id} を認識しました！`);
 
-              if ([...scannedIds, id].length === 4) {
+              // 4つのQRコードを認識したらリダイレクト
+              if (scannedIds.size === 3) {
+                // sizeが3の時、IDが4つ目であることを意味する
                 setMessage("すべてのQRコードを認識しました。リダイレクト中...");
                 window.location.href = `${baseUrl}?id=${id}`;
               }
