@@ -191,209 +191,66 @@
 // }
 
 
-import { useState, useEffect, useRef } from "react";
-import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
+import React, { useState } from "react";
+import dynamic from "next/dynamic";
 
-export default function Home() {
-  const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
-  const [scanning, setScanning] = useState(true);
-  const [firstUrl, setFirstUrl] = useState(null); // 最初に取得したURLを格納
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null); // QRコードの枠を描画するキャンバス
-  const codeReader = useRef(new BrowserMultiFormatReader()).current; // QRコードリーダーのインスタンス
+// QRコードスキャナーを動的に読み込む
+const QrReader = dynamic(() => import("react-qr-scanner"), { ssr: false });
 
-  useEffect(() => {
-    const constraints = {
-      video: {
-        facingMode: "environment", // 背面カメラを使用
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
-        frameRate: { ideal: 60, max: 60 },
-      },
-    };
+const QrCodePage = () => {
+  const [scannedIds, setScannedIds] = useState(new Set()); // 読み取ったID番号のセット
+  const [message, setMessage] = useState(""); // ステータスメッセージ
 
-    // メディアデバイスからストリームを取得
-    const getCameraStream = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia(constraints);
-        videoRef.current.srcObject = stream;
-        videoRef.current.play().catch((error) => {
-          console.error("カメラの再生に失敗しました:", error);
-        });
-      } catch (error) {
-        console.error("カメラの取得に失敗しました:", error);
-        alert("カメラにアクセスできませんでした。");
-      }
-    };
+  // QRコード読み取り時の処理
+  const handleScan = (data) => {
+    if (data) {
+      const url = data.text; // 読み取ったURL
+      const baseUrl = "https://example.com"; // QRコードのベースURL（例）
+      const idParam = "id="; // IDパラメータのキー
+      if (url.startsWith(baseUrl) && url.includes(idParam)) {
+        const id = url.split(idParam)[1]; // ID番号を抽出
+        if (id && !scannedIds.has(id)) {
+          setScannedIds((prevIds) => new Set([...prevIds, id])); // ID番号をセットに追加
+          setMessage(`ID ${id} を認識しました！`);
 
-    getCameraStream();
-
-    // QRコードの枠を描画する関数
-    const drawFrames = () => {
-      const canvas = canvasRef.current;
-      const context = canvas.getContext("2d");
-
-      // ビデオのサイズを取得
-      const videoWidth = videoRef.current.videoWidth || 1280;
-      const videoHeight = videoRef.current.videoHeight || 720;
-      canvas.width = videoWidth;
-      canvas.height = videoHeight;
-
-      // 枠の設定
-      const frameSize = 150; // 枠のサイズ
-      const margin = 5; // 枠の間隔
-
-      // 4つの枠をまとめたdivを中央に配置
-      const divSize = frameSize * 2 + margin; // 4つの枠を含むdivのサイズ
-      const centerX = videoWidth / 2 - divSize / 2;
-      const centerY = videoHeight / 2 - divSize / 2;
-
-      // 4つの枠を配置する位置を計算
-      const positions = [
-        { x: centerX, y: centerY }, // 左上
-        { x: centerX + frameSize + margin, y: centerY }, // 右上
-        { x: centerX, y: centerY + frameSize + margin }, // 左下
-        { x: centerX + frameSize + margin, y: centerY + frameSize + margin }, // 右下
-      ];
-
-      context.clearRect(0, 0, canvas.width, canvas.height); // 前の枠をクリア
-
-      // 枠を描画
-      positions.forEach((pos) => {
-        context.beginPath();
-        context.rect(pos.x, pos.y, frameSize, frameSize);
-        context.lineWidth = 5;
-        context.strokeStyle = "#FF0000"; // 枠の色を赤に設定
-        context.stroke();
-      });
-    };
-
-    // QRコードの読み取り処理
-    const handleScan = (result, error) => {
-      if (result) {
-        const scannedUrl = result.getText();
-        const urlParams = new URLSearchParams(new URL(scannedUrl).search);
-        const id = urlParams.get("id");
-
-        // 最初に取得したURLを設定
-        if (!firstUrl) {
-          setFirstUrl(scannedUrl);
-        }
-
-        // 枠内のQRコードが検出された場合のみ認識する
-        drawFrames(); // QRコードが検出された時に枠を描画
-
-        // IDが1〜4の範囲であれば、そのURLを保存
-        if (id && id >= 1 && id <= 4) {
-          if (!urls[id]) {
-            setUrls((prevUrls) => {
-              const updatedUrls = { ...prevUrls, [id]: scannedUrl };
-
-              if (Object.values(updatedUrls).filter(Boolean).length === 4) {
-                setScanning(false);
-                codeReader.reset(); // QRコード読み取りを停止
-                window.location.href = firstUrl; // 最初に読み取ったURLへ移動
-              }
-
-              return updatedUrls;
-            });
+          // すべてのID (1～4) を認識したらURLにリダイレクト
+          if ([...scannedIds, id].length === 4) {
+            setMessage("すべてのQRコードを認識しました。リダイレクト中...");
+            window.location.href = url; // URL へ移動
           }
+        } else {
+          setMessage(`ID ${id} はすでに認識済みです。`);
         }
+      } else {
+        setMessage("無効なQRコードです。");
       }
+    }
+  };
 
-      if (error && error !== "NotFoundError") {
-        console.error("QRコードの読み取りエラー:", error);
-      }
-    };
-
-    // QRコードをカメラ映像から読み取る
-    codeReader.decodeFromVideoDevice(null, videoRef.current, handleScan);
-
-    return () => {
-      // コンポーネントがアンマウントされた場合にカメラを停止
-      if (videoRef.current.srcObject) {
-        const stream = videoRef.current.srcObject;
-        const tracks = stream.getTracks();
-        tracks.forEach((track) => track.stop());
-      }
-    };
-  }, [firstUrl, urls]);
-
-
-  const handleStopScanning = () => {
-    setScanning(false);
+  const handleError = (error) => {
+    console.error("QRコード読み取りエラー:", error);
+    setMessage("QRコードの読み取り中にエラーが発生しました。");
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-between">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
-      <div className="w-full max-w-4xl relative">
-        {/* カメラ映像 */}
-        <video
-          ref={videoRef}
-          className="w-full h-96 bg-black rounded object-cover" // ビデオの高さを96に設定し、小さく表示
+      <div className="bg-white shadow-md rounded-lg p-4">
+        <QrReader
+          delay={300}
+          style={{ width: "100%" }}
+          onError={handleError}
+          onScan={handleScan}
         />
-
-        {/* QRコードの枠を描画するキャンバス */}
-        <canvas
-          ref={canvasRef}
-          className="absolute top-0 left-0 w-full h-full pointer-events-none"
-        />
-
-        {/* 最初のURLを表示 */}
-        {firstUrl && (
-          <div className="mt-4 bg-white shadow rounded p-4">
-            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
-            <p>
-              <a
-                href={firstUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 underline"
-              >
-                {firstUrl}
-              </a>
-            </p>
-          </div>
-        )}
-
-        {/* 結果表示 */}
-        <div className="mt-4 bg-white shadow rounded p-4">
-          <h2 className="text-lg font-bold">スキャン結果:</h2>
-          <ul className="list-disc list-inside mt-2">
-            {[1, 2, 3, 4].map((id) => (
-              <li key={id}>
-                <span className="font-bold">QRコード {id}:</span>{" "}
-                {urls[id] ? (
-                  <>
-                    <a
-                      href={urls[id]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline"
-                    >
-                      {urls[id]}
-                    </a>
-                    <span className="text-gray-500"> (ID: {id})</span>
-                  </>
-                ) : (
-                  <span className="text-gray-500">スキャン結果待ち...</span>
-                )}
-              </li>
-            ))}
-          </ul>
-        </div>
-
-        {/* スキャン停止ボタン */}
-        {scanning && (
-          <button
-            onClick={handleStopScanning}
-            className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-          >
-            スキャン停止
-          </button>
-        )}
+      </div>
+      <div className="mt-4 text-center">
+        {message && <p className="text-blue-500">{message}</p>}
+        <p className="text-gray-700 mt-2">
+          認識済みID: {[...scannedIds].join(", ") || "なし"}
+        </p>
       </div>
     </div>
   );
-}
+};
+
+export default QrCodePage;
