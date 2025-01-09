@@ -192,116 +192,67 @@
 
 
 
-
-import React, { useEffect, useRef, useState } from "react";
+import React, { useState, useRef } from "react";
+import { useEffect } from "react";
 import jsQR from "jsqr";
 
-const QrCodePage = () => {
+const QRCodeScanner = () => {
+  const [scannedData, setScannedData] = useState([]);
   const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [scannedIds, setScannedIds] = useState(new Set());
-  const [baseUrl, setBaseUrl] = useState(null);
-  const [message, setMessage] = useState("");
 
   useEffect(() => {
-    const startCamera = async () => {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: "environment" }, // 背面カメラを使用
-        });
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
-          videoRef.current.play();
-        }
-      } catch (error) {
-        console.error("カメラの起動に失敗しました:", error);
-        setMessage("カメラのアクセスに失敗しました。");
+    // ビデオのストリームを取得し、QRコードを読み取る
+    const startVideo = async () => {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" },
+      });
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
       }
     };
-
-    startCamera();
-    return () => {
-      if (videoRef.current && videoRef.current.srcObject) {
-        videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
-      }
-    };
+    startVideo();
   }, []);
 
-  useEffect(() => {
-    const detectQrCodes = () => {
-      if (!videoRef.current || !canvasRef.current) return;
+  const handleVideoFrame = (frame) => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = frame.videoWidth;
+    canvas.height = frame.videoHeight;
+    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
 
-      const video = videoRef.current;
-      const canvas = canvasRef.current;
-      const ctx = canvas.getContext("2d");
+    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+    const qrCodes = jsQR(imageData.data, canvas.width, canvas.height);
 
-      // カメラのサイズに合わせてcanvasを設定
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
-
-      ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-
-      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-      const code = jsQR(imageData.data, imageData.width, imageData.height);
-
-      if (code) {
-        const url = code.data;
-        const idParam = "id=";
-
-        if (url.includes(idParam)) {
-          const id = url.split(idParam)[1];
-
-          // 最初に認識したQRコードのベースURLを設定
-          if (!baseUrl) {
-            setBaseUrl(url.split("?")[0]);
-            setMessage(`ベースURLを設定しました: ${url.split("?")[0]}`);
-          }
-
-          // ベースURLと一致するQRコードか確認
-          if (baseUrl && url.startsWith(baseUrl)) {
-            if (!scannedIds.has(id)) {
-              setScannedIds((prevIds) => new Set([...prevIds, id]));
-              setMessage(`ID ${id} を認識しました！`);
-
-              // 4つのQRコードを認識したらリダイレクト
-              if (scannedIds.size === 3) {
-                // sizeが3の時、IDが4つ目であることを意味する
-                setMessage("すべてのQRコードを認識しました。リダイレクト中...");
-                window.location.href = `${baseUrl}?id=${id}`;
-              }
-            }
-          }
-        }
-      }
-
-      requestAnimationFrame(detectQrCodes);
-    };
-
-    requestAnimationFrame(detectQrCodes);
-  }, [baseUrl, scannedIds]);
+    if (qrCodes) {
+      setScannedData((prevData) => [...prevData, qrCodes.data]);
+    }
+  };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
-      <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
+    <div>
+      <h2>QRコードスキャナー</h2>
       <video
         ref={videoRef}
-        className="w-full h-full absolute top-0 left-0"
-        style={{ objectFit: "cover" }}
+        onPlay={(e) => {
+          const videoElement = e.target;
+          const frame = videoElement;
+          handleVideoFrame(frame);
+        }}
+        autoPlay
+        muted
+        playsInline
+        width="100%"
       />
-      <canvas
-        ref={canvasRef}
-        className="absolute top-0 left-0 w-full h-full"
-        style={{ zIndex: 2 }}
-      />
-      <div className="mt-4 text-center">
-        {message && <p className="text-blue-500">{message}</p>}
-        <p className="text-gray-700 mt-2">
-          認識済みID: {[...scannedIds].join(", ") || "なし"}
-        </p>
-        {baseUrl && <p className="text-gray-500 mt-1">ベースURL: {baseUrl}</p>}
+      <div>
+        <h3>検出されたQRコードデータ</h3>
+        <ul>
+          {scannedData.map((data, index) => (
+            <li key={index}>{data}</li>
+          ))}
+        </ul>
       </div>
     </div>
   );
 };
 
-export default QrCodePage;
+export default QRCodeScanner;

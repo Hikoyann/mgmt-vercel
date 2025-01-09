@@ -438,14 +438,8 @@ video {
 .relative {
   position: relative;
 }
-.left-0 {
-  left: 0px;
-}
 .right-0 {
   right: 0px;
-}
-.top-0 {
-  top: 0px;
 }
 .z-10 {
   z-index: 10;
@@ -456,9 +450,6 @@ video {
 }
 .mb-4 {
   margin-bottom: 1rem;
-}
-.mt-1 {
-  margin-top: 0.25rem;
 }
 .mt-2 {
   margin-top: 0.5rem;
@@ -480,9 +471,6 @@ video {
 }
 .h-auto {
   height: auto;
-}
-.h-full {
-  height: 100%;
 }
 .min-h-screen {
   min-height: 100vh;
@@ -591,9 +579,6 @@ video {
 .py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
-}
-.text-center {
-  text-align: center;
 }
 .text-2xl {
   font-size: 1.5rem;
