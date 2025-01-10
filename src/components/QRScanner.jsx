@@ -92,7 +92,7 @@ export default function QRScanner() {
         {/* カメラ映像 */}
         <video
           ref={videoRef}
-          className="absolute top-0 left-0 w-full h-full object-cover"
+          className="absolute top-0 left-0 w-full h-full object-cover rounded-lg"
           autoPlay
           muted
           playsInline
@@ -101,7 +101,7 @@ export default function QRScanner() {
         {/* QRコードの検出用キャンバス */}
         <canvas
           ref={canvasRef}
-          className="absolute top-0 left-0 w-full h-full"
+          className="absolute top-0 left-0 w-full h-full rounded-lg"
           width="640"
           height="480"
         ></canvas>
