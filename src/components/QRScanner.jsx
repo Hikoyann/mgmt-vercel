@@ -64,7 +64,8 @@ export default function QRScanner() {
                 setResult(decoded.string());
               }
 
-              const color = new cv.Scalar(255, 0, 0, 255);
+              // 赤枠でQRコードを囲む
+              const color = new cv.Scalar(255, 0, 0, 255); // 赤色
               cv.polylines(src, points, true, color, 2, cv.LINE_AA);
               cv.imshow(canvas, src);
             }
@@ -93,6 +94,7 @@ export default function QRScanner() {
   return (
     <div className="flex flex-col items-center">
       <div className="relative w-full max-w-2xl">
+        {/* カメラ映像 */}
         <video
           ref={videoRef}
           className="absolute w-full h-auto"
@@ -100,6 +102,8 @@ export default function QRScanner() {
           muted
           playsInline
         ></video>
+
+        {/* QRコードの検出用キャンバス */}
         <canvas
           ref={canvasRef}
           className="absolute w-full h-auto"
@@ -112,7 +116,11 @@ export default function QRScanner() {
         {result ? (
           <>
             <h2 className="text-lg font-bold">QRコード内容:</h2>
-            <p className="text-blue-500">{result}</p>
+            <p className="text-blue-500">
+              <a href={result} target="_blank" rel="noopener noreferrer">
+                {result}
+              </a>
+            </p>
           </>
         ) : (
           <p className="text-gray-500">QRコードをスキャンしてください...</p>
