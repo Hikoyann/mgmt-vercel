@@ -191,58 +191,94 @@
 // }
 
 
-
-import React, { useState, useRef } from "react";
-import { useEffect } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import jsQR from "jsqr";
 
 const QRCodeScanner = () => {
-  const [scannedData, setScannedData] = useState([]);
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
+  const [scannedData, setScannedData] = useState([]);
 
   useEffect(() => {
-    // ビデオのストリームを取得し、QRコードを読み取る
     const startVideo = async () => {
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: "environment" },
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            width: { ideal: 1280 },
+            height: { ideal: 720 },
+            facingMode: "environment",
+          },
+        });
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+        console.log("Video stream started successfully");
+      } catch (error) {
+        console.error("Error accessing camera:", error);
       }
     };
+
     startVideo();
   }, []);
 
-  const handleVideoFrame = (frame) => {
-    const canvas = document.createElement("canvas");
-    const ctx = canvas.getContext("2d");
-    canvas.width = frame.videoWidth;
-    canvas.height = frame.videoHeight;
-    ctx.drawImage(frame, 0, 0, canvas.width, canvas.height);
+  useEffect(() => {
+    const scanQRCode = () => {
+      if (!videoRef.current || !canvasRef.current) {
+        requestAnimationFrame(scanQRCode);
+        return;
+      }
 
-    const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
-    const qrCodes = jsQR(imageData.data, canvas.width, canvas.height);
+      const canvas = canvasRef.current;
+      const ctx = canvas.getContext("2d");
 
-    if (qrCodes) {
-      setScannedData((prevData) => [...prevData, qrCodes.data]);
-    }
-  };
+      // ビデオフレームをキャンバスに描画
+      canvas.width = videoRef.current.videoWidth;
+      canvas.height = videoRef.current.videoHeight;
+      ctx.drawImage(videoRef.current, 0, 0, canvas.width, canvas.height);
+
+      // QRコードのスキャン
+      const imageData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+      const qrCode = jsQR(imageData.data, canvas.width, canvas.height);
+
+      if (qrCode) {
+        console.log("QR Code detected:", qrCode.data);
+        setScannedData((prev) => {
+          if (!prev.includes(qrCode.data)) {
+            return [...prev, qrCode.data];
+          }
+          return prev;
+        });
+
+        // 赤枠を描画
+        const loc = qrCode.location;
+        ctx.beginPath();
+        ctx.moveTo(loc.topLeftCorner.x, loc.topLeftCorner.y);
+        ctx.lineTo(loc.topRightCorner.x, loc.topRightCorner.y);
+        ctx.lineTo(loc.bottomRightCorner.x, loc.bottomRightCorner.y);
+        ctx.lineTo(loc.bottomLeftCorner.x, loc.bottomLeftCorner.y);
+        ctx.closePath();
+        ctx.strokeStyle = "red";
+        ctx.lineWidth = 4;
+        ctx.stroke();
+      }
+
+      requestAnimationFrame(scanQRCode);
+    };
+
+    requestAnimationFrame(scanQRCode);
+  }, []);
 
   return (
     <div>
       <h2>QRコードスキャナー</h2>
       <video
         ref={videoRef}
-        onPlay={(e) => {
-          const videoElement = e.target;
-          const frame = videoElement;
-          handleVideoFrame(frame);
-        }}
         autoPlay
         muted
         playsInline
-        width="100%"
+        style={{ width: "100%" }}
       />
+      <canvas ref={canvasRef} style={{ width: "100%" }} />
       <div>
         <h3>検出されたQRコードデータ</h3>
         <ul>
