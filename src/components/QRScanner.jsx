@@ -63,11 +63,6 @@ export default function QRScanner() {
               if (decoded.size().height > 0) {
                 setResult(decoded.string());
               }
-
-              // 赤枠でQRコードを囲む
-              const color = new cv.Scalar(255, 0, 0, 255); // 赤色
-              cv.polylines(src, points, true, color, 2, cv.LINE_AA);
-              cv.imshow(canvas, src);
             }
           } catch (error) {
             console.error("QRコード検出エラー:", error);
