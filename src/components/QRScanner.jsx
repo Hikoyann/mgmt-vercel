@@ -92,12 +92,12 @@ export default function QRScanner() {
   }, [opencvLoaded]);
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex flex-col items-center justify-center">
       <div className="relative w-full max-w-2xl">
         {/* カメラ映像 */}
         <video
           ref={videoRef}
-          className="absolute w-full h-auto"
+          className="absolute top-0 left-0 w-full h-full object-cover"
           autoPlay
           muted
           playsInline
@@ -106,13 +106,13 @@ export default function QRScanner() {
         {/* QRコードの検出用キャンバス */}
         <canvas
           ref={canvasRef}
-          className="absolute w-full h-auto"
+          className="absolute top-0 left-0 w-full h-full"
           width="640"
           height="480"
         ></canvas>
       </div>
 
-      <div className="mt-4 bg-white p-4 rounded shadow text-center">
+      <div className="mt-4 bg-white p-4 rounded shadow text-center w-full max-w-2xl">
         {result ? (
           <>
             <h2 className="text-lg font-bold">QRコード内容:</h2>
