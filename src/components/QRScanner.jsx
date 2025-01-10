@@ -87,7 +87,7 @@ export default function QRScanner() {
   }, [opencvLoaded]);
 
   return (
-    <div className="flex flex-col items-center justify-center">
+    <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <div className="relative w-full max-w-2xl">
         {/* カメラ映像 */}
         <video
