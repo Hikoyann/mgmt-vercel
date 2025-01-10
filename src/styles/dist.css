@@ -481,6 +481,9 @@ video {
 .w-full {
   width: 100%;
 }
+.max-w-2xl {
+  max-width: 42rem;
+}
 .max-w-4xl {
   max-width: 56rem;
 }
@@ -579,6 +582,9 @@ video {
 .py-2 {
   padding-top: 0.5rem;
   padding-bottom: 0.5rem;
+}
+.text-center {
+  text-align: center;
 }
 .text-2xl {
   font-size: 1.5rem;
