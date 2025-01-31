@@ -11,7 +11,7 @@ client.on("interactionCreate", async (interaction) => {
     // クリックされたボタンが削除ボタンの場合
     const id = interaction.customId.split("_")[1]; // IDを取得
 
-    // Next.js の削除 API を呼び出す
+    // Firebase の削除 API を呼び出す
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/delete-equipment`,
@@ -25,6 +25,12 @@ client.on("interactionCreate", async (interaction) => {
       const data = await res.json();
 
       if (res.ok) {
+        // Discord へのリクエスト送信
+        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/discode`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id, equipmentName: data.equipmentName }), // equipmentNameも一緒に送信
+        });
         interaction.reply({
           content: "備品が削除されました。",
           ephemeral: true,
