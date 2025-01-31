@@ -7,6 +7,7 @@ import { ref, get, set, push, remove } from "firebase/database";
 // import { QRCode } from 'qrcode.react';
 import QRCodeLib from "qrcode";
 import QRCode from "qrcode.react";
+import Link from "next/link";
 
 export function Equipment() {
   const [mgmts, setMgmt] = useState([]);
@@ -69,7 +70,10 @@ export function Equipment() {
               .filter((mgmt) => mgmt.num) // 備品番号があるものだけをフィルタリング
               .map((mgmt, index) => {
                 return (
-                  <div key={index} className="mgmt-item mt-4 border p-4 rounded">
+                  <div
+                    key={index}
+                    className="mgmt-item mt-4 border p-4 rounded"
+                  >
                     <div>登録順: {index + 1}</div>
                     <div>備品番号: {mgmt.num}</div>
                     <div>備品名: {mgmt.equipmentName}</div>
@@ -115,6 +119,12 @@ export function Equipment() {
                     >
                       削除
                     </button>
+                    <Link
+                      href={`/equipmentRegistry/${mgmt.num}`}
+                      className="mt-2 ml-2 inline-block bg-blue-300 text-white py-1 px-2 rounded"
+                    >
+                      リンク先
+                    </Link>
                   </div>
                 );
               })}
