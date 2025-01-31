@@ -34,6 +34,21 @@ export function Equipment() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const handleDeleteRequest = async (id, equipmentName) => {
+    const response = await fetch("/api/discord", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, equipmentName }),
+    });
+
+    const data = await response.json();
+    if (response.ok) {
+      alert("削除リクエストを Discord に送信しました。");
+    } else {
+      alert(`エラー: ${data.error}`);
+    }
+  };
+
   const handleDelete = async (id) => {
     const res = await fetch(
       "https://login-8e441-default-rtdb.firebaseio.com/equipments.json"
@@ -113,8 +128,16 @@ export function Equipment() {
                         <div>QRコードが見つかりません</div>
                       )}
                     </div>
-                    <button
+                    {/* <button
                       onClick={() => handleDelete(mgmt.id)}
+                      className="mt-2 bg-gray-500 text-white py-1 px-2 rounded"
+                    >
+                      削除
+                    </button> */}
+                    <button
+                      onClick={() =>
+                        handleDeleteRequest(mgmt.id, mgmt.equipmentName)
+                      }
                       className="mt-2 bg-gray-500 text-white py-1 px-2 rounded"
                     >
                       削除
