@@ -80,13 +80,13 @@ export default function QRCode() {
   };
 
   // Discord通知関数
-  const sendToDiscord = (message) => {
-    fetch("/api/discord", {
+  const sendToDiscord = async (message) => {
+    await fetch("/api/discord", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ content: message }),
+      body: JSON.stringify({ message }),
     });
   };
 
