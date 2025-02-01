@@ -83,15 +83,7 @@ export default function QRCode() {
     window.location.reload();
   };
 
-  // Firebaseからデータを取得
-  const getEquipmentData = async (id) => {
-    const USER_API_URL = `https://login-8e441-default-rtdb.firebaseio.com/equipmentRegistry/${id}.json`;
-    const response = await fetch(USER_API_URL);
-    const data = await response.json();
-    return data;
-  };
-
-  // ディスコードに通知を送信
+  // Discord通知関数
   const sendToDiscord = async (message) => {
     await fetch("/api/discord", {
       method: "POST",
@@ -102,74 +94,31 @@ export default function QRCode() {
     });
   };
 
-  // QRコード判定とディスコード通知
-  const handleLinkClick = (urls, damagedIds, user) => {
+  // リンク先ボタンを押した時の処理
+  const handleLinkClick = () => {
+    const damagedIds = Object.entries(urls)
+      .filter(([id, url]) => url === "損傷判定URL")
+      .map(([id]) => id);
+
     if (damagedIds.length > 0 && user) {
       const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
 
-      // 最初に読み取ったURLからIDを抽出してデータを取得
-      const id = new URLSearchParams(new URL(firstUrl).search).get("id");
-      if (id) {
-        getEquipmentData(id).then((data) => {
-          console.log(data); // 取得したデータをログに表示
+      // 個別のQRコードIDとその状態を通知する
+      const message = [
+        `ユーザー: ${userName}`,
+        ...[1, 2, 3, 4].map((id) => {
+          const status = urls[id] === "損傷判定URL" ? "損傷" : "問題なし";
+          return `QRコードID${id}: ${status}`;
+        }),
+      ].join("\n");
 
-          // Firebaseから取得したデータ内の備品IDと備品名を抽出
-          const equipmentID = data.num; // 備品ID
-          const equipmentName = data.equipmentName; // 備品名
-
-          // 個別のQRコードIDとその状態を通知する
-          const message = [
-            `ユーザー: ${userName}`,
-            ...[1, 2, 3, 4].map((id) => {
-              const status = urls[id] === "損傷判定URL" ? "損傷" : "問題なし";
-              return `QRコードID${id}: ${status}`;
-            }),
-            `備品名: ${equipmentName} (ID: ${equipmentID})`, // 備品名とIDをメッセージに追加
-          ].join("\n");
-
-          // Discordに通知を送信
-          sendToDiscord(message);
-        });
-      }
+      sendToDiscord(message); // Discordに通知を送信
+    } else {
+      console.error("ユーザーがログインしていません");
     }
+
+    window.open(firstUrl, "_blank");
   };
-
-  // // Discord通知関数
-  // const sendToDiscord = async (message) => {
-  //   await fetch("/api/discord", {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //     },
-  //     body: JSON.stringify({ message }),
-  //   });
-  // };
-
-  // // リンク先ボタンを押した時の処理
-  // const handleLinkClick = () => {
-  //   const damagedIds = Object.entries(urls)
-  //     .filter(([id, url]) => url === "損傷判定URL")
-  //     .map(([id]) => id);
-
-  //   if (damagedIds.length > 0 && user) {
-  //     const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
-
-  //     // 個別のQRコードIDとその状態を通知する
-  //     const message = [
-  //       `ユーザー: ${userName}`,
-  //       ...[1, 2, 3, 4].map((id) => {
-  //         const status = urls[id] === "損傷判定URL" ? "損傷" : "問題なし";
-  //         return `QRコードID${id}: ${status}`;
-  //       }),
-  //     ].join("\n");
-
-  //     sendToDiscord(message); // Discordに通知を送信
-  //   } else {
-  //     console.error("ユーザーがログインしていません");
-  //   }
-
-  //   window.open(firstUrl, "_blank");
-  // };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
