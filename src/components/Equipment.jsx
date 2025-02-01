@@ -74,8 +74,7 @@ export function Equipment() {
         // メッセージの作成
         const message = `${user.displayName || user.email} さんが(ID: ${
           deletedEquipment.num
-        })\n
-        備品:${deletedEquipment.equipmentName}を削除しました。`;
+        })\n備品:${deletedEquipment.equipmentName}を削除しました。`;
         sendToDiscord(message); // Discordに通知を送信
       }
     }
