@@ -30,9 +30,18 @@ export function Header() {
 }
 
 function SignInButton() {
-  const signInWithGoogle = () => {
+  const signInWithGoogle = async () => {
     // ログイン
-    signInWithPopup(auth, provider);
+    // Googleでポップアップ認証を実行
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
+
+    // メールアドレスのドメインを確認
+    if (!user.email.endsWith("@ous.jp")) {
+      alert("このドメインのメールアドレスではログインできません。");
+      await auth.signOut();  // サインアウト
+    }
+    // signInWithPopup(auth, provider);
   };
 
   return (
