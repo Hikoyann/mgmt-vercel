@@ -272,7 +272,7 @@ export default function QRcode() {
   };
 
   // URL読み取りに失敗したQRコードのIDを管理
-  const handleReplaceUrl = (id) => {
+  const handleFailScan = (id) => {
     setFailedUrls((prev) => [...prev, id]); // 代替URLが必要なIDを追加
     setLoadingUrls((prev) => prev.filter((item) => item !== id)); // スキャン待ちIDから削除
   };
@@ -328,13 +328,18 @@ export default function QRcode() {
                     <span className="text-gray-500"> (ID: {id})</span>
                   </>
                 ) : loadingUrls.includes(id) ? (
-                  <span className="text-gray-500">スキャン結果待ち...</span>
+                  <button
+                    onClick={() => handleFailScan(id)}
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                  >
+                    スキャン結果待ち...
+                  </button>
                 ) : failedUrls.includes(id) ? (
-                  <span className="text-gray-500">読み取れませんでした</span>
+                  <span className="text-gray-500">損傷判定</span>
                 ) : (
                   <button
-                    onClick={() => handleReplaceUrl(id)}
-                    className="ml-2 text-red-500"
+                    onClick={() => handleFailScan(id)}
+                    className="bg-red-500 text-white px-4 py-2 rounded"
                   >
                     URL代替
                   </button>
