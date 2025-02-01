@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from "react";
-import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
+import { BrowserMultiFormatReader } from "@zxing/library";
+import { useRouter } from "next/router"; // Next.jsのrouterをインポート
 
 export default function QRcode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
@@ -8,6 +9,7 @@ export default function QRcode() {
   const [loadingUrls, setLoadingUrls] = useState([1, 2, 3, 4]); // スキャン待ちのQRコードIDを管理
   const [failedUrls, setFailedUrls] = useState([]); // 代替URLが必要なQRコードIDを管理
   const videoRef = useRef(null);
+  const router = useRouter(); // routerを取得
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
@@ -71,7 +73,9 @@ export default function QRcode() {
                   codeReader.reset(); // QRコード読み取りを停止
 
                   // すべて読み取れたら最初のURLへ移動
-                  window.location.href = firstUrl; // 最初に読み取ったURLへ移動
+                  if (firstUrl) {
+                    router.push(firstUrl); // Next.jsのrouter.pushでURL遷移
+                  }
                 }
 
                 return updatedUrls;
@@ -94,7 +98,7 @@ export default function QRcode() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [firstUrl, urls]);
+  }, [firstUrl, urls, router]);
 
   // URL読み取りに失敗したQRコードのIDを管理
   const handleFailScan = (id) => {
@@ -107,9 +111,9 @@ export default function QRcode() {
       return updatedUrls;
     });
 
-    // 代替URLとして判定した場合は即座に最初のURLへリダイレクト
-    if (firstUrl) {
-      window.location.href = firstUrl; // 最初に読み取ったURLへ移動
+    // すべてが損傷判定の場合にホームに戻る
+    if (Object.values(urls).every((url) => url === "損傷判定URL")) {
+      router.push("/"); // Next.jsのrouter.pushでホームに戻る
     }
   };
 
