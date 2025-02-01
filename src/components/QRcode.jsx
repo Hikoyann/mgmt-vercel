@@ -99,10 +99,12 @@ export default function QRcode() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl relative">
         {/* カメラ映像 */}
-        <div className="relative w-40% h-auto mx-auto">
+        <div className="relative w-1/3 h-auto mx-auto">
+          {" "}
+          {/* ここでさらにサイズを小さく（1/3に変更） */}
           <video
             ref={videoRef}
-            className="bg-black rounded object-cover w-full h-full" // カメラ映像のスタイル変更
+            className="bg-black rounded object-cover w-full h-full"
             style={{
               margin: "0 auto", // センター配置
             }}
