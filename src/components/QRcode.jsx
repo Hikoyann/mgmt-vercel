@@ -5,7 +5,6 @@ import { useRouter } from "next/router"; // Next.jsのrouterをインポート
 export default function QRcode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [scanning, setScanning] = useState(true);
-  const [firstUrl, setFirstUrl] = useState(null); // 最初に取得したURLを格納
   const [loadingUrls, setLoadingUrls] = useState([1, 2, 3, 4]); // スキャン待ちのQRコードIDを管理
   const [failedUrls, setFailedUrls] = useState([]); // 代替URLが必要なQRコードIDを管理
   const videoRef = useRef(null);
@@ -50,11 +49,6 @@ export default function QRcode() {
           const urlParams = new URLSearchParams(new URL(scannedUrl).search);
           const id = urlParams.get("id");
 
-          // 最初に読み取ったURLを保存
-          if (!firstUrl) {
-            setFirstUrl(scannedUrl); // 最初に読み取ったURLを保存
-          }
-
           // IDが1〜4の範囲であれば、そのURLを保存
           if (id && id >= 1 && id <= 4) {
             // すでにそのIDが読み取られている場合はスキップ
@@ -69,18 +63,26 @@ export default function QRcode() {
                 const scannedCount =
                   Object.values(updatedUrls).filter(Boolean).length;
 
+                // 4つ全てのQRコードが読み取られたかどうかを確認
                 if (scannedCount === 4) {
                   setScanning(false);
                   codeReader.reset(); // QRコード読み取りを停止
 
-                  // 4つすべての結果が揃ったら、移動先を決める
-                  if (Object.values(updatedUrls).every((url) => url === null)) {
+                  // 4つすべての結果が揃った後、移動先を決める
+                  if (
+                    Object.values(updatedUrls).every(
+                      (url) => url === "損傷判定URL"
+                    )
+                  ) {
                     // すべて損傷の場合、"/"に戻る
                     router.push("/");
                   } else {
-                    // 最初に読み取ったURLへ移動
-                    if (firstUrl) {
-                      router.push(firstUrl);
+                    // URLが読み取られていればそのURLに移動
+                    const firstValidUrl = Object.values(updatedUrls).find(
+                      (url) => url !== "損傷判定URL"
+                    );
+                    if (firstValidUrl) {
+                      router.push(firstValidUrl); // 最初のURLに移動
                     }
                   }
                 }
@@ -105,7 +107,7 @@ export default function QRcode() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [firstUrl, urls, router]);
+  }, [urls, router]);
 
   // URL読み取りに失敗したQRコードのIDを管理
   const handleFailScan = (id) => {
@@ -117,11 +119,6 @@ export default function QRcode() {
       const updatedUrls = { ...prevUrls, [id]: "損傷判定URL" };
       return updatedUrls;
     });
-
-    // すべてが損傷判定の場合にホームに戻る
-    if (Object.values(urls).every((url) => url === "損傷判定URL")) {
-      router.push("/"); // Next.jsのrouter.pushでホームに戻る
-    }
   };
 
   return (
@@ -137,23 +134,6 @@ export default function QRcode() {
             }}
           />
         </div>
-
-        {/* 最初のURLを表示 */}
-        {firstUrl && (
-          <div className="mt-4 bg-white shadow rounded p-4">
-            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
-            <p>
-              <a
-                href={firstUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 underline"
-              >
-                {firstUrl}
-              </a>
-            </p>
-          </div>
-        )}
 
         {/* 結果表示 */}
         <div className="mt-4 bg-white shadow rounded p-4">
