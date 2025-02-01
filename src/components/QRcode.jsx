@@ -68,13 +68,20 @@ export default function QRcode() {
                 // すべてのQRコードが読み取れたらスキャンを停止
                 const scannedCount =
                   Object.values(updatedUrls).filter(Boolean).length;
+
                 if (scannedCount === 4) {
                   setScanning(false);
                   codeReader.reset(); // QRコード読み取りを停止
 
-                  // すべて読み取れたら最初のURLへ移動
-                  if (firstUrl) {
-                    router.push(firstUrl); // Next.jsのrouter.pushでURL遷移
+                  // 4つすべての結果が揃ったら、移動先を決める
+                  if (Object.values(updatedUrls).every((url) => url === null)) {
+                    // すべて損傷の場合、"/"に戻る
+                    router.push("/");
+                  } else {
+                    // 最初に読み取ったURLへ移動
+                    if (firstUrl) {
+                      router.push(firstUrl);
+                    }
                   }
                 }
 
