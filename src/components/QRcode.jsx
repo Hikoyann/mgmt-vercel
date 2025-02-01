@@ -75,6 +75,7 @@ export default function QRCode() {
     setFailedUrls((prev) => [...prev, id]);
     setLoadingUrls((prev) => prev.filter((item) => item !== id));
     setUrls((prev) => ({ ...prev, [id]: "損傷判定URL" }));
+    router.push("/");
   };
 
   return (
@@ -124,9 +125,9 @@ export default function QRCode() {
                 ) : loadingUrls.includes(id) ? (
                   <button
                     onClick={() => handleFailScan(id)}
-                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded mt-2 mb-2"
                   >
-                    スキャン結果待ち...
+                    損傷ボタン
                   </button>
                 ) : (
                   <span className="text-gray-500">損傷判定</span>
