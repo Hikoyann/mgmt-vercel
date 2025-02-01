@@ -104,9 +104,14 @@ export default function QRCode() {
     if (damagedIds.length > 0 && user) {
       const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
 
+      // 最初に読み込んだURLから備品番号（id）を取得
+      const urlParams = new URLSearchParams(new URL(firstUrl).search);
+      const equipmentId = urlParams.get("id"); // idが備品番号
+
       // 個別のQRコードIDとその状態を通知する
       const message = [
         `ユーザー: ${userName}`,
+        `備品番号: ${equipmentId}`, // 備品番号
         ...[1, 2, 3, 4].map((id) => {
           const status = urls[id] === "損傷判定URL" ? "損傷" : "問題なし";
           return `QRコードID${id}: ${status}`;
@@ -139,14 +144,13 @@ export default function QRCode() {
                 <span className="font-bold">QRコード {id}:</span>{" "}
                 {urls[id] ? (
                   <>
-                    <a
-                      href={urls[id]}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-blue-500 underline"
+                    {/* リンクとして青線が表示されないように、styleで調整 */}
+                    <span
+                      onClick={() => window.open(urls[id], "_blank")}
+                      className="text-black cursor-pointer"
                     >
                       {urls[id]}
-                    </a>
+                    </span>
                     <span className="text-gray-500"> (ID: {id})</span>
                   </>
                 ) : loadingUrls.includes(id) ? (
@@ -157,6 +161,7 @@ export default function QRCode() {
                     損傷ボタン
                   </button>
                 ) : (
+                  // 損傷判定URLもspanに変更して、青線を消す
                   <span className="text-gray-500">損傷判定</span>
                 )}
               </li>
@@ -168,7 +173,10 @@ export default function QRCode() {
         {allDamaged && (
           <div className="mt-4">
             <button
-              onClick={() => setUrls({ 1: null, 2: null, 3: null, 4: null })}
+              onClick={() => {
+                setUrls({ 1: null, 2: null, 3: null, 4: null }); // QRコード情報のリセット
+                setLoadingUrls([1, 2, 3, 4]); // ローディング中のQRコードリセット
+              }}
               className="bg-blue-500 text-white px-6 py-3 rounded"
             >
               リセット
@@ -182,7 +190,7 @@ export default function QRCode() {
             <h2 className="text-lg font-bold">最初に取得したURL:</h2>
             <button
               onClick={handleLinkClick}
-              className="text-blue-500 underline px-4 py-2 bg-white border border-blue-500 rounded"
+              className="text-black px-4 py-2 bg-white border border-black rounded"
             >
               リンク先
             </button>
