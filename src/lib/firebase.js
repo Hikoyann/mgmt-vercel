@@ -18,30 +18,5 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
-import { signOut } from "firebase/auth";
 
-const signInWithGoogle = async () => {
-  try {
-    const result = await signInWithPopup(auth, provider);
-    const user = result.user;
-
-    // メールアドレスを取得
-    const email = user.email;
-
-    // ドメインが@ous.jpかどうかを確認
-    if (email && email.endsWith("@ous.jp")) {
-      console.log("アクセス許可: @ous.jp ドメインのメールアドレス");
-      // @ous.jp ドメインのユーザーに対してアクセスを許可する処理
-    } else {
-      console.log("アクセス拒否: @ous.jp ドメイン以外のメールアドレス");
-      // サインアウトしてアクセスを拒否
-      await signOut(auth);
-      console.log("サインアウトしました");
-    }
-  } catch (error) {
-    console.error("Googleログインに失敗しました:", error.message);
-  }
-};
-
-
-export { auth, database, storage, provider, signInWithGoogle };
+export { auth, database, storage, provider };
