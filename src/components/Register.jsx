@@ -148,7 +148,11 @@ export function Register() {
       );
 
       // Discord通知
-      const message = `新しい備品が登録されました！\n備品ID: ${newEquipmentNum}\n備品名: ${inputs.equipmentName}\n詳細: ${inputs.equipmentDetails}`;
+      const message = `新しい備品が登録されました！\n登録者: ${
+        user.displayName || user.email
+      }\n備品ID: ${newEquipmentNum}\n備品名: ${inputs.equipmentName}\n詳細: ${
+        inputs.equipmentDetails
+      }`;
       sendToDiscord(message);
 
       // フォームのリセット
