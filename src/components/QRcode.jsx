@@ -4,21 +4,18 @@ import { useRouter } from "next/router";
 
 export default function QRcode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
-  const [scanning, setScanning] = useState(true); // すべてのQRコードの読み取りが終わるまで待機
-  const [failedUrls, setFailedUrls] = useState([]); // 損傷判定URLを押したQRコードIDを管理
-  const videoRef = useRef(null);
-  const router = useRouter(); // Next.jsのrouterをインポート
-
-  const [firstUrl, setFirstUrl] = useState(null); // 最初に読み取ったURL
   const [loadingUrls, setLoadingUrls] = useState([1, 2, 3, 4]); // スキャン待ちのQRコードIDを管理
+  const [scanning, setScanning] = useState(true);
+  const videoRef = useRef(null);
+  const router = useRouter();
+  const [firstUrl, setFirstUrl] = useState(null);
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
 
-    // カメラの設定
     const constraints = {
       video: {
-        facingMode: "environment", // 背面カメラを使用
+        facingMode: "environment",
         width: { ideal: 640 },
         height: { ideal: 480 },
         frameRate: { ideal: 60, max: 60 },
@@ -40,7 +37,6 @@ export default function QRcode() {
 
     getCameraStream();
 
-    // QRコードの読み取り設定
     codeReader.decodeFromVideoDevice(
       null,
       videoRef.current,
@@ -51,35 +47,34 @@ export default function QRcode() {
           const id = urlParams.get("id");
 
           if (id && id >= 1 && id <= 4) {
-            // QRコードが読み取れたら、URLを保存
             setUrls((prevUrls) => {
               const updatedUrls = { ...prevUrls, [id]: scannedUrl };
+              setLoadingUrls((prev) => prev.filter((item) => item !== id)); // スキャン待ちのQRコードIDから削除
 
-              // スキャン待ちのIDを削除
-              setLoadingUrls((prev) => prev.filter((item) => item !== id));
-
-              // 最初に読み取ったURLを保存
               if (!firstUrl) {
-                setFirstUrl(scannedUrl);
+                setFirstUrl(scannedUrl); // 最初のURLを保存
               }
 
-              // すべてのQRコードが読み取れたら判定処理
               const allScanned =
                 Object.values(updatedUrls).filter(Boolean).length === 4;
 
               if (allScanned) {
-                const allDamaged = Object.values(updatedUrls).every(
-                  (url) => url === "損傷判定URL"
+                // 4つのQRコードがすべてURLでない場合、"/"へ移動
+                const allValidUrls = Object.values(updatedUrls).every((url) =>
+                  isValidUrl(url)
                 );
-                setScanning(false); // すべてのQRコードの情報を取得したのでスキャンを終了
 
-                if (allDamaged) {
-                  // すべて損傷判定URLなら、"/"に戻る
-                  router.push("/");
+                setScanning(false); // スキャン終了
+
+                if (!allValidUrls) {
+                  console.log(
+                    "すべてのQRコードがURLでないため、ホームに戻ります。"
+                  );
+                  router.push("/"); // すべてURLでない場合はホームに移動
                 } else {
-                  // URLが読み取られていればその最初のURLに移動
                   if (firstUrl) {
-                    router.push(firstUrl); // 最初に読み取られたURLへ移動
+                    console.log("最初のURLに移動します:", firstUrl);
+                    router.push(firstUrl); // 最初のURLに移動
                   }
                 }
               }
@@ -96,7 +91,6 @@ export default function QRcode() {
     );
 
     return () => {
-      // コンポーネントがアンマウントされた場合にカメラを停止
       if (videoRef.current.srcObject) {
         const stream = videoRef.current.srcObject;
         const tracks = stream.getTracks();
@@ -105,33 +99,43 @@ export default function QRcode() {
     };
   }, [firstUrl, urls, router]);
 
-  // URL読み取りに失敗したQRコードのIDを管理
-  const handleFailScan = (id) => {
-    setFailedUrls((prev) => [...prev, id]); // 代替URLが必要なIDを追加
-    setLoadingUrls((prev) => prev.filter((item) => item !== id)); // スキャン待ちIDから削除
-
-    // 損傷ボタンを押した場合、代替URLとして判定
-    setUrls((prevUrls) => {
-      const updatedUrls = { ...prevUrls, [id]: "損傷判定URL" };
-      return updatedUrls;
-    });
+  // URLの有効性を確認する関数
+  const isValidUrl = (url) => {
+    try {
+      const parsedUrl = new URL(url);
+      return parsedUrl.protocol === "http:" || parsedUrl.protocol === "https:";
+    } catch (e) {
+      return false;
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl relative">
-        {/* カメラ映像 */}
         <div className="relative w-1/3 h-auto mx-auto">
           <video
             ref={videoRef}
             className="bg-black rounded object-cover w-full h-full"
-            style={{
-              margin: "0 auto", // センター配置
-            }}
+            style={{ margin: "0 auto" }}
           />
         </div>
 
-        {/* 結果表示 */}
+        {firstUrl && (
+          <div className="mt-4 bg-white shadow rounded p-4">
+            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
+            <p>
+              <a
+                href={firstUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-500 underline"
+              >
+                {firstUrl}
+              </a>
+            </p>
+          </div>
+        )}
+
         <div className="mt-4 bg-white shadow rounded p-4">
           <h2 className="text-lg font-bold">スキャン結果:</h2>
           <ul className="list-disc list-inside mt-2">
@@ -157,8 +161,6 @@ export default function QRcode() {
                   >
                     スキャン結果待ち...
                   </button>
-                ) : failedUrls.includes(id) ? (
-                  <span className="text-gray-500">損傷判定</span>
                 ) : (
                   <button
                     onClick={() => handleFailScan(id)}
