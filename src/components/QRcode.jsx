@@ -99,15 +99,15 @@ export default function QRcode() {
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl relative">
         {/* カメラ映像 */}
-        <video
-          ref={videoRef}
-          className="bg-black rounded object-cover"
-          style={{
-            width: "40%", // カメラ映像の幅をさらに小さく（40%に変更）
-            margin: "0 auto", // センター配置
-            display: "block",
-          }}
-        />
+        <div className="relative w-40% h-auto mx-auto">
+          <video
+            ref={videoRef}
+            className="bg-black rounded object-cover w-full h-full" // カメラ映像のスタイル変更
+            style={{
+              margin: "0 auto", // センター配置
+            }}
+          />
+        </div>
 
         {/* 最初のURLを表示 */}
         {firstUrl && (

@@ -478,11 +478,17 @@ video {
 .flex {
   display: flex;
 }
+.h-auto {
+  height: auto;
+}
 .h-full {
   height: 100%;
 }
 .min-h-screen {
   min-height: 100vh;
+}
+.w-40 {
+  width: 10rem;
 }
 .w-48 {
   width: 12rem;
