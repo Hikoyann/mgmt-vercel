@@ -78,6 +78,34 @@ export default function QRCode() {
     window.location.reload();
   };
 
+  // Discord通知関数
+  const sendToDiscord = (message) => {
+    fetch("/api/discord", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ content: message }),
+    });
+  };
+
+  // リンク先ボタンを押した時の処理
+  const handleLinkClick = () => {
+    const damagedIds = Object.entries(urls)
+      .filter(([id, url]) => url === "損傷判定URL")
+      .map(([id]) => id);
+
+    if (damagedIds.length > 0) {
+      const user = { email: "user@example.com" }; // ユーザー情報をここに追加
+      const message = `${
+        user.email
+      } さんが以下のQRコードIDを損傷と判定しました: ${damagedIds.join(", ")}`;
+      sendToDiscord(message);
+    }
+
+    window.open(firstUrl, "_blank");
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       <div className="w-full max-w-4xl relative">
@@ -138,7 +166,7 @@ export default function QRCode() {
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">最初に取得したURL:</h2>
             <button
-              onClick={() => window.open(firstUrl, "_blank")}
+              onClick={handleLinkClick}
               className="text-blue-500 underline px-4 py-2 bg-white border border-blue-500 rounded"
             >
               リンク先
