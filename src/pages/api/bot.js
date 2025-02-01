@@ -1,4 +1,3 @@
-// `bot.js`
 import { Client, GatewayIntentBits } from "discord.js";
 import fetch from "node-fetch";
 
@@ -27,26 +26,27 @@ client.on("interactionCreate", async (interaction) => {
       );
 
       const data = await res.json();
+
       if (res.ok) {
-        interaction.reply({
-          content: "備品が削除されました。",
+        await interaction.reply({
+          content: "✅ 備品が削除されました！",
           ephemeral: true,
         });
       } else {
-        interaction.reply({
-          content: `エラー: ${data.error}`,
+        await interaction.reply({
+          content: `⚠️ エラー: ${data.error}`,
           ephemeral: true,
         });
       }
     } catch (error) {
-      interaction.reply({
-        content: "削除処理中にエラーが発生しました。",
+      await interaction.reply({
+        content: "⚠️ 削除処理中にエラーが発生しました。",
         ephemeral: true,
       });
     }
   } else if (interaction.customId === "cancel") {
-    interaction.reply({
-      content: "削除がキャンセルされました。",
+    await interaction.reply({
+      content: "❌ 削除がキャンセルされました。",
       ephemeral: true,
     });
   }
