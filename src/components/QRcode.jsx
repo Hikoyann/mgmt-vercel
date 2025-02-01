@@ -74,13 +74,14 @@ export default function QRCode() {
   }, [firstUrl, urls]);
 
   const handleFailScan = (id) => {
-    setUrls((prev) => ({ ...prev, [id]: "損傷判定URL" }));
-    setLoadingUrls((prev) => prev.filter((item) => item !== id));
-  };
+    // 既に損傷判定がされている場合は更新しない
+    if (urls[id] === "損傷判定URL") return;
 
-  // ページリロード関数
-  const handleReload = () => {
-    window.location.reload();
+    setUrls((prev) => {
+      const updatedUrls = { ...prev, [id]: "損傷判定URL" };
+      return updatedUrls;
+    });
+    setLoadingUrls((prev) => prev.filter((item) => item !== id));
   };
 
   // Discord通知関数
@@ -167,10 +168,10 @@ export default function QRCode() {
         {allDamaged && (
           <div className="mt-4">
             <button
-              onClick={handleReload}
+              onClick={() => setUrls({ 1: null, 2: null, 3: null, 4: null })}
               className="bg-blue-500 text-white px-6 py-3 rounded"
             >
-              リロード
+              リセット
             </button>
           </div>
         )}
@@ -180,7 +181,7 @@ export default function QRCode() {
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">最初に取得したURL:</h2>
             <button
-              onClick={() => handleLinkClick()}
+              onClick={handleLinkClick}
               className="text-blue-500 underline px-4 py-2 bg-white border border-blue-500 rounded"
             >
               リンク先
