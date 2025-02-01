@@ -1,30 +1,3 @@
-// const handleResult = (decodedText) => {
-//     console.log("QRコードの結果:", decodedText); // ここでQRコードの結果をコンソールに出力
-
-//     const urlPattern = /equipmentRegistry\/(\d+)\?id=(\d+)/;
-//     const match = decodedText.match(urlPattern);
-
-//     if (match) {
-//       const [_, pathId, queryId] = match;
-
-//       // スキャン済みURLの追加（重複防止）
-//       setScannedUrls((prev) => {
-//         const exists = prev.some(
-//           (entry) => entry.pathId === pathId && entry.queryId === queryId
-//         );
-//         return exists ? prev : [...prev, { pathId, queryId }];
-//       });
-
-//       // カウント管理
-//       setScanCount((prev) => {
-//         const updatedCount = { ...prev };
-//         if (!updatedCount[pathId]) updatedCount[pathId] = new Set();
-//         updatedCount[pathId].add(queryId);
-//         return updatedCount;
-//       });
-//     }
-//   };
-
 import { useState, useEffect, useRef } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library"; // 通常のインポート方法
 
@@ -86,7 +59,9 @@ export default function QRcode() {
                 const updatedUrls = { ...prevUrls, [id]: scannedUrl };
 
                 // すべてのQRコードが読み取れたらスキャンを停止
-                if (Object.values(updatedUrls).filter(Boolean).length === 4) {
+                const scannedCount =
+                  Object.values(updatedUrls).filter(Boolean).length;
+                if (scannedCount === 4) {
                   setScanning(false);
                   codeReader.reset(); // QRコード読み取りを停止
 
