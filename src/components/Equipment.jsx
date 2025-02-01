@@ -72,9 +72,10 @@ export function Equipment() {
       const deletedEquipment = mgmts.find((mgmt) => mgmt.id === id);
       if (deletedEquipment) {
         // メッセージの作成
-        const message = `${user.displayName || user.email} さんが備品 ${
-          deletedEquipment.equipmentName
-        }（ID: ${deletedEquipment.num}）を削除しました。`;
+        const message = `${user.displayName || user.email} さんが(ID: ${
+          deletedEquipment.num
+        })\n
+        備品:${deletedEquipment.equipmentName}を削除しました。`;
         sendToDiscord(message); // Discordに通知を送信
       }
     }
