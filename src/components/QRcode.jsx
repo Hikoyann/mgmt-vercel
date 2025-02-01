@@ -6,9 +6,11 @@ export default function QRCode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
   const [firstUrl, setFirstUrl] = useState(null);
   const [loadingUrls, setLoadingUrls] = useState([1, 2, 3, 4]);
-  const [failedUrls, setFailedUrls] = useState([]);
   const videoRef = useRef(null);
   const router = useRouter();
+
+  // QRコードが全て損傷判定に変わったかどうかをチェックする
+  const allDamaged = Object.values(urls).every((url) => url === "損傷判定URL");
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
@@ -42,11 +44,6 @@ export default function QRCode() {
             setUrls((prev) => {
               const updatedUrls = { ...prev, [id]: scannedUrl };
               setLoadingUrls((prev) => prev.filter((item) => item !== id));
-
-              if (Object.values(updatedUrls).filter(Boolean).length === 4) {
-                codeReader.reset();
-                router.push(firstUrl || "/");
-              }
               return updatedUrls;
             });
           }
@@ -63,19 +60,16 @@ export default function QRCode() {
         videoRef.current.srcObject.getTracks().forEach((track) => track.stop());
       }
     };
-  }, [firstUrl, urls, router]);
-
-  useEffect(() => {
-    if (Object.values(urls).every((url) => url === "損傷判定URL")) {
-      router.push("/");
-    }
-  }, [urls, router]);
+  }, [firstUrl, urls]);
 
   const handleFailScan = (id) => {
-    setFailedUrls((prev) => [...prev, id]);
-    setLoadingUrls((prev) => prev.filter((item) => item !== id));
     setUrls((prev) => ({ ...prev, [id]: "損傷判定URL" }));
-    router.push("/");
+    setLoadingUrls((prev) => prev.filter((item) => item !== id));
+  };
+
+  // ページリロード関数
+  const handleReload = () => {
+    window.location.reload();
   };
 
   return (
@@ -136,6 +130,18 @@ export default function QRCode() {
             ))}
           </ul>
         </div>
+
+        {/* 全てが損傷判定になった場合にリロードボタンを表示 */}
+        {allDamaged && (
+          <div className="mt-4">
+            <button
+              onClick={handleReload}
+              className="bg-blue-500 text-white px-6 py-3 rounded"
+            >
+              リロード
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
