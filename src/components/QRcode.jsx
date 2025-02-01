@@ -78,10 +78,6 @@ export default function QRCode() {
     setLoadingUrls((prev) => prev.filter((item) => item !== id));
   };
 
-  // ページリロード関数
-  const handleReload = () => {
-    window.location.reload();
-  };
 
   // Firebaseからデータを取得
   const getEquipmentData = async (id) => {
