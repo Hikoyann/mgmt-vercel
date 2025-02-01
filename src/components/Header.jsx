@@ -38,7 +38,7 @@ function SignInButton() {
 
     // メールアドレスのドメインを確認
     if (!user.email.endsWith("@ous.jp")) {
-      alert("このドメインのメールアドレスではログインできません。");
+      alert("大学のメールアドレスでログインしてください。");
       await auth.signOut();  // サインアウト
     }
     // signInWithPopup(auth, provider);
