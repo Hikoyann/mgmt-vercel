@@ -1,14 +1,16 @@
 import { useState, useEffect, useRef } from "react";
 import { BrowserMultiFormatReader } from "@zxing/library";
-import { useRouter } from "next/router"; // Next.jsのrouterをインポート
+import { useRouter } from "next/router";
 
 export default function QRcode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
-  const [scanning, setScanning] = useState(true);
-  const [loadingUrls, setLoadingUrls] = useState([1, 2, 3, 4]); // スキャン待ちのQRコードIDを管理
-  const [failedUrls, setFailedUrls] = useState([]); // 代替URLが必要なQRコードIDを管理
+  const [scanning, setScanning] = useState(true); // すべてのQRコードの読み取りが終わるまで待機
+  const [failedUrls, setFailedUrls] = useState([]); // 損傷判定URLを押したQRコードIDを管理
   const videoRef = useRef(null);
-  const router = useRouter(); // routerを取得
+  const router = useRouter(); // Next.jsのrouterをインポート
+
+  const [firstUrl, setFirstUrl] = useState(null); // 最初に読み取ったURL
+  const [loadingUrls, setLoadingUrls] = useState([1, 2, 3, 4]); // スキャン待ちのQRコードIDを管理
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
@@ -23,7 +25,6 @@ export default function QRcode() {
       },
     };
 
-    // メディアデバイスからストリームを取得
     const getCameraStream = async () => {
       try {
         const stream = await navigator.mediaDevices.getUserMedia(constraints);
@@ -49,47 +50,42 @@ export default function QRcode() {
           const urlParams = new URLSearchParams(new URL(scannedUrl).search);
           const id = urlParams.get("id");
 
-          // IDが1〜4の範囲であれば、そのURLを保存
           if (id && id >= 1 && id <= 4) {
-            // すでにそのIDが読み取られている場合はスキップ
-            if (!urls[id]) {
-              setUrls((prevUrls) => {
-                const updatedUrls = { ...prevUrls, [id]: scannedUrl };
+            // QRコードが読み取れたら、URLを保存
+            setUrls((prevUrls) => {
+              const updatedUrls = { ...prevUrls, [id]: scannedUrl };
 
-                // スキャン結果待ちのIDを削除
-                setLoadingUrls((prev) => prev.filter((item) => item !== id));
+              // スキャン待ちのIDを削除
+              setLoadingUrls((prev) => prev.filter((item) => item !== id));
 
-                // すべてのQRコードが読み取れたらスキャンを停止
-                const scannedCount =
-                  Object.values(updatedUrls).filter(Boolean).length;
+              // 最初に読み取ったURLを保存
+              if (!firstUrl) {
+                setFirstUrl(scannedUrl);
+              }
 
-                // 4つ全てのQRコードが読み取られたかどうかを確認
-                if (scannedCount === 4) {
-                  setScanning(false);
-                  codeReader.reset(); // QRコード読み取りを停止
+              // すべてのQRコードが読み取れたら判定処理
+              const allScanned =
+                Object.values(updatedUrls).filter(Boolean).length === 4;
 
-                  // 4つすべての結果が揃った後、移動先を決める
-                  if (
-                    Object.values(updatedUrls).every(
-                      (url) => url === "損傷判定URL"
-                    )
-                  ) {
-                    // すべて損傷の場合、"/"に戻る
-                    router.push("/");
-                  } else {
-                    // URLが読み取られていればそのURLに移動
-                    const firstValidUrl = Object.values(updatedUrls).find(
-                      (url) => url !== "損傷判定URL"
-                    );
-                    if (firstValidUrl) {
-                      router.push(firstValidUrl); // 最初のURLに移動
-                    }
+              if (allScanned) {
+                const allDamaged = Object.values(updatedUrls).every(
+                  (url) => url === "損傷判定URL"
+                );
+                setScanning(false); // すべてのQRコードの情報を取得したのでスキャンを終了
+
+                if (allDamaged) {
+                  // すべて損傷判定URLなら、"/"に戻る
+                  router.push("/");
+                } else {
+                  // URLが読み取られていればその最初のURLに移動
+                  if (firstUrl) {
+                    router.push(firstUrl); // 最初に読み取られたURLへ移動
                   }
                 }
+              }
 
-                return updatedUrls;
-              });
-            }
+              return updatedUrls;
+            });
           }
         }
 
@@ -107,7 +103,7 @@ export default function QRcode() {
         tracks.forEach((track) => track.stop());
       }
     };
-  }, [urls, router]);
+  }, [firstUrl, urls, router]);
 
   // URL読み取りに失敗したQRコードのIDを管理
   const handleFailScan = (id) => {
