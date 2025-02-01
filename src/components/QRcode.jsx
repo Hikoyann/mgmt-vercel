@@ -14,7 +14,13 @@ export default function QRCode() {
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
-    const constraints = { video: { facingMode: "environment" } };
+    const constraints = {
+      video: {
+        facingMode: "environment",
+        width: { ideal: 1280 },
+        height: { ideal: 720 },
+      },
+    };
 
     const getCameraStream = async () => {
       try {
@@ -82,22 +88,6 @@ export default function QRCode() {
           />
         </div>
 
-        {firstUrl && (
-          <div className="mt-4 bg-white shadow rounded p-4">
-            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
-            <p>
-              <a
-                href={firstUrl}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-blue-500 underline"
-              >
-                {firstUrl}
-              </a>
-            </p>
-          </div>
-        )}
-
         <div className="mt-4 bg-white shadow rounded p-4">
           <h2 className="text-lg font-bold">スキャン結果:</h2>
           <ul className="list-disc list-inside mt-2">
@@ -139,6 +129,19 @@ export default function QRCode() {
               className="bg-blue-500 text-white px-6 py-3 rounded"
             >
               リロード
+            </button>
+          </div>
+        )}
+
+        {/* 4つのQRコードがスキャンされてから最初のURLを表示 */}
+        {Object.values(urls).filter(Boolean).length === 4 && firstUrl && (
+          <div className="mt-4 bg-white shadow rounded p-4">
+            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
+            <button
+              onClick={() => window.open(firstUrl, "_blank")}
+              className="text-blue-500 underline px-4 py-2 bg-white border border-blue-500 rounded"
+            >
+              リンク先
             </button>
           </div>
         )}
