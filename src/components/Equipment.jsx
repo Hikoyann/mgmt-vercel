@@ -68,11 +68,14 @@ export function Equipment() {
       setMgmt((prev) => prev.filter((mgmt) => mgmt.id !== id)); // 状態を更新
       alert("削除しました");
 
-      // Send notification to Discord after deletion
+      // 削除された備品情報を取得
       const deletedEquipment = mgmts.find((mgmt) => mgmt.id === id);
       if (deletedEquipment) {
-        const message = `${deletedEquipment.equipmentName}（ID: ${deletedEquipment.num}）の備品が削除されました。`;
-        sendToDiscord(message); // Send notification to Discord
+        // メッセージの作成
+        const message = `${user.displayName || user.email} さんが備品 ${
+          deletedEquipment.equipmentName
+        }（ID: ${deletedEquipment.num}）を削除しました。`;
+        sendToDiscord(message); // Discordに通知を送信
       }
     }
   };
