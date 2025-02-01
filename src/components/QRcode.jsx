@@ -14,8 +14,8 @@ export default function QRcode() {
     const constraints = {
       video: {
         facingMode: "environment", // 背面カメラを使用
-        width: { ideal: 1280 },
-        height: { ideal: 720 },
+        width: { ideal: 640 },
+        height: { ideal: 480 },
         frameRate: { ideal: 60, max: 60 },
       },
     };
@@ -98,12 +98,19 @@ export default function QRcode() {
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
       <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
-      <div className="w-full max-w-4xl">
+      <div className="w-full max-w-4xl relative">
         {/* カメラ映像 */}
         <video
           ref={videoRef}
           className="w-full h-auto bg-black rounded object-cover" // object-cover を追加
+          style={{ width: "80%", margin: "0 auto", display: "block" }} // カメラの枠を80%にして中央に配置
         />
+
+        {/* QRコードスキャン領域 */}
+        <div
+          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-4 border-blue-500 w-64 h-64"
+          style={{ pointerEvents: "none" }}
+        ></div>
 
         {/* 最初のURLを表示 */}
         {firstUrl && (
