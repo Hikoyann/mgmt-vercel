@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { BrowserMultiFormatReader } from "@zxing/library";
+import { getAuth } from "firebase/auth"; // Firebaseの認証をインポート
 
 export default function QRCode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
@@ -96,11 +97,18 @@ export default function QRCode() {
       .map(([id]) => id);
 
     if (damagedIds.length > 0) {
-      const user = { email: "user@example.com" }; // ユーザー情報をここに追加
-      const message = `${
-        user.email
-      } さんが以下のQRコードIDを損傷と判定しました: ${damagedIds.join(", ")}`;
-      sendToDiscord(message);
+      const auth = getAuth(); // Firebaseの認証インスタンスを取得
+      const user = auth.currentUser; // 現在ログインしているユーザー情報を取得
+
+      if (user) {
+        const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
+        const message = `${userName} さんが以下のQRコードIDを損傷と判定しました: ${damagedIds.join(
+          ", "
+        )}`;
+        sendToDiscord(message); // Discordに通知を送信
+      } else {
+        console.error("ユーザーがログインしていません");
+      }
     }
 
     window.open(firstUrl, "_blank");
