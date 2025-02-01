@@ -18,5 +18,26 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
+// Googleログイン関数
+const signInWithGoogle = async () => {
+  try {
+    const result = await signInWithPopup(auth, provider);
+    const user = result.user;
 
-export { auth, database, storage, provider };
+    // メールアドレスを取得
+    const email = user.email;
+
+    // ドメインが@ous.jpかどうかを確認
+    if (email && email.endsWith("@ous.jp")) {
+      console.log("アクセス許可: @ous.jp ドメインのメールアドレス");
+      // @ous.jp ドメインのユーザーに対してアクセスを許可する処理
+    } else {
+      console.log("アクセス拒否: @ous.jp ドメイン以外のメールアドレス");
+      // @ous.jp ドメインでない場合はアクセス拒否の処理
+    }
+  } catch (error) {
+    console.error("Googleログインに失敗しました:", error.message);
+  }
+};
+
+export { auth, database, storage, provider, signInWithGoogle };
