@@ -18,7 +18,8 @@ const auth = getAuth(app);
 const database = getDatabase(app);
 const storage = getStorage(app);
 const provider = new GoogleAuthProvider();
-// Googleログイン関数
+import { signOut } from "firebase/auth";
+
 const signInWithGoogle = async () => {
   try {
     const result = await signInWithPopup(auth, provider);
@@ -33,11 +34,14 @@ const signInWithGoogle = async () => {
       // @ous.jp ドメインのユーザーに対してアクセスを許可する処理
     } else {
       console.log("アクセス拒否: @ous.jp ドメイン以外のメールアドレス");
-      // @ous.jp ドメインでない場合はアクセス拒否の処理
+      // サインアウトしてアクセスを拒否
+      await signOut(auth);
+      console.log("サインアウトしました");
     }
   } catch (error) {
     console.error("Googleログインに失敗しました:", error.message);
   }
 };
+
 
 export { auth, database, storage, provider, signInWithGoogle };
