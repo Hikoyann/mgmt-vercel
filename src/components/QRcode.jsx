@@ -267,14 +267,16 @@ export default function QRcode() {
     };
   }, [firstUrl, urls]);
 
-  const handleStopScanning = () => {
-    setScanning(false);
-  };
-
   // URL読み取りに失敗したQRコードのIDを管理
   const handleFailScan = (id) => {
     setFailedUrls((prev) => [...prev, id]); // 代替URLが必要なIDを追加
     setLoadingUrls((prev) => prev.filter((item) => item !== id)); // スキャン待ちIDから削除
+
+    // 損傷ボタンを押した場合、代替URLとして判定
+    setUrls((prevUrls) => {
+      const updatedUrls = { ...prevUrls, [id]: "損傷判定URL" };
+      return updatedUrls;
+    });
   };
 
   return (
@@ -330,7 +332,7 @@ export default function QRcode() {
                 ) : loadingUrls.includes(id) ? (
                   <button
                     onClick={() => handleFailScan(id)}
-                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded"
+                    className="bg-gray-300 text-gray-700 px-4 py-2 rounded mt-2 mb-2"
                   >
                     スキャン結果待ち...
                   </button>
@@ -339,7 +341,7 @@ export default function QRcode() {
                 ) : (
                   <button
                     onClick={() => handleFailScan(id)}
-                    className="bg-red-500 text-white px-4 py-2 rounded"
+                    className="bg-red-500 text-white px-4 py-2 rounded mt-2 mb-2"
                   >
                     URL代替
                   </button>
@@ -348,16 +350,6 @@ export default function QRcode() {
             ))}
           </ul>
         </div>
-
-        {/* スキャン停止ボタン */}
-        {scanning && (
-          <button
-            onClick={handleStopScanning}
-            className="mt-4 bg-red-500 text-white px-4 py-2 rounded"
-          >
-            スキャン停止
-          </button>
-        )}
       </div>
     </div>
   );
