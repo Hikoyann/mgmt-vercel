@@ -97,20 +97,17 @@ export default function QRcode() {
 
   return (
     <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
-      <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
       <div className="w-full max-w-4xl relative">
         {/* カメラ映像 */}
         <video
           ref={videoRef}
-          className="w-full h-auto bg-black rounded object-cover" // object-cover を追加
-          style={{ width: "80%", margin: "0 auto", display: "block" }} // カメラの枠を80%にして中央に配置
+          className="bg-black rounded object-cover"
+          style={{
+            width: "40%", // カメラ映像の幅をさらに小さく（40%に変更）
+            margin: "0 auto", // センター配置
+            display: "block",
+          }}
         />
-
-        {/* QRコードスキャン領域 */}
-        <div
-          className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 border-4 border-blue-500 w-64 h-64"
-          style={{ pointerEvents: "none" }}
-        ></div>
 
         {/* 最初のURLを表示 */}
         {firstUrl && (
