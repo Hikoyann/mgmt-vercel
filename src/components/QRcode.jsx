@@ -174,7 +174,7 @@ export default function QRCode() {
           <div className="mt-4 bg-white shadow rounded p-4">
             <h2 className="text-lg font-bold">最初に取得したURL:</h2>
             <button
-              onClick={handleLinkClick}
+              onClick={() => handleLinkClick()}
               className="text-blue-500 underline px-4 py-2 bg-white border border-blue-500 rounded"
             >
               リンク先
