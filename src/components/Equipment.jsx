@@ -34,6 +34,16 @@ export function Equipment() {
     return new Date(dateString).toLocaleDateString(undefined, options);
   };
 
+  const sendToDiscord = async (message) => {
+    await fetch("/api/discord", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+  };
+
   const handleDelete = async (id) => {
     const res = await fetch(
       "https://login-8e441-default-rtdb.firebaseio.com/equipments.json"
@@ -57,6 +67,13 @@ export function Equipment() {
       await remove(ref(database, `equipmentRegistry/${id}`));
       setMgmt((prev) => prev.filter((mgmt) => mgmt.id !== id)); // 状態を更新
       alert("削除しました");
+
+      // Send notification to Discord after deletion
+      const deletedEquipment = mgmts.find((mgmt) => mgmt.id === id);
+      if (deletedEquipment) {
+        const message = `${deletedEquipment.equipmentName}（ID: ${deletedEquipment.num}）の備品が削除されました。`;
+        sendToDiscord(message); // Send notification to Discord
+      }
     }
   };
 
