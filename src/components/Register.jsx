@@ -31,6 +31,17 @@ export function Register() {
     setInputs({ ...inputs, [name]: value });
   };
 
+  const sendToDiscord = async (message) => {
+    await fetch("/api/discord", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ message }),
+    });
+  };
+
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(storage);
@@ -135,6 +146,10 @@ export function Register() {
         dbRef(database, `equipmentRegistry/${newEquipmentNum}`),
         updatedInputs
       );
+
+      // Discord通知
+      const message = `新しい備品が登録されました！\n備品ID: ${newEquipmentNum}\n備品名: ${inputs.equipmentName}\n詳細: ${inputs.equipmentDetails}`;
+      sendToDiscord(message);
 
       // フォームのリセット
       setInputs({ equipmentName: "", equipmentDetails: "" });

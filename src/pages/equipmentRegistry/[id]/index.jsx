@@ -132,11 +132,8 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
       }, 4000);
 
       // 備品が借りられた時にディスコードに通知を送信
-      const message = `${user.displayName || user.email} さんが${
-        mgmt.equipmentName
-      }（ID: ${mgmt.num}）を借りました。使用用途: ${
-        inputs.purpose
-      }、返却予定日: ${inputs.returnDate}`;
+      const message = `${user.displayName || user.email} さんが ${
+      equipmentInfo.equipmentName}（ID: ${equipmentInfo.num}）を借りました。\n使用用途: ${inputs.purpose}\n返却予定日: ${inputs.returnDate}`;
       sendToDiscord(message); // Discordに通知
     }
   };
