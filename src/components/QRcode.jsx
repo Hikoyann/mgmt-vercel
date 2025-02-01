@@ -101,16 +101,14 @@ export default function QRCode() {
       .filter(([id, url]) => url === "損傷判定URL")
       .map(([id]) => id);
 
-    if (damagedIds.length > 0 && user) {
-      const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
-
-      // 最初に読み込んだURLから備品番号（id）を取得
-      const urlParams = new URLSearchParams(new URL(firstUrl).search);
-      const equipmentId = urlParams.get("id"); // idが備品番号
+    if (firstUrl) {
+      // 正規表現でURLの中から '/数字' を抽出
+      const match = firstUrl.match(/\/(\d+)(?=\?id=\d+)/); // ?id= の前の数字部分を取得
+      const equipmentId = match ? match[1] : "不明"; // マッチしなければ "不明"
 
       // 個別のQRコードIDとその状態を通知する
       const message = [
-        `ユーザー: ${userName}`,
+        `ユーザー: ${user.displayName || user.email}`, // ユーザー名またはメール
         `備品番号: ${equipmentId}`, // 備品番号
         ...[1, 2, 3, 4].map((id) => {
           const status = urls[id] === "損傷判定URL" ? "損傷" : "問題なし";
@@ -187,7 +185,7 @@ export default function QRCode() {
         {/* 4つのQRコードがスキャンされてから最初のURLを表示 */}
         {Object.values(urls).filter(Boolean).length === 4 && firstUrl && (
           <div className="mt-4 bg-white shadow rounded p-4">
-            <h2 className="text-lg font-bold">最初に取得したURL:</h2>
+            <h2 className="text-lg font-bold">取得したURL:</h2>
             <button
               onClick={handleLinkClick}
               className="text-black px-4 py-2 bg-white border border-black rounded"
