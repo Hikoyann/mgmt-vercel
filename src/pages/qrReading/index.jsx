@@ -10,7 +10,7 @@ export default function Home() {
         <title>備品登録 Form</title>
       </Head>
       <Header/>
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center">
+      <div>
         <h1 className="text-2xl font-bold mb-4">QRコードスキャナー</h1>
         {/* <QRScanner /> */}
         <QRcode />
