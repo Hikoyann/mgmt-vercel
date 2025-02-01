@@ -1,7 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/router";
 import { BrowserMultiFormatReader } from "@zxing/library";
-import { getAuth } from "firebase/auth"; // Firebaseの認証をインポート
+import { useAuthState } from "react-firebase-hooks/auth"; // useAuthStateをインポート
+import { auth } from "../lib/firebase"; // Firebaseの認証をインポート
 
 export default function QRCode() {
   const [urls, setUrls] = useState({ 1: null, 2: null, 3: null, 4: null });
@@ -12,6 +13,9 @@ export default function QRCode() {
 
   // QRコードが全て損傷判定に変わったかどうかをチェックする
   const allDamaged = Object.values(urls).every((url) => url === "損傷判定URL");
+
+  // Firebaseの認証状態を取得
+  const [user] = useAuthState(auth); // useAuthStateを使ってユーザー情報を取得
 
   useEffect(() => {
     const codeReader = new BrowserMultiFormatReader();
@@ -96,19 +100,21 @@ export default function QRCode() {
       .filter(([id, url]) => url === "損傷判定URL")
       .map(([id]) => id);
 
-    if (damagedIds.length > 0) {
-      const auth = getAuth(); // Firebaseの認証インスタンスを取得
-      const user = auth.currentUser; // 現在ログインしているユーザー情報を取得
+    if (damagedIds.length > 0 && user) {
+      const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
 
-      if (user) {
-        const userName = user.displayName || user.email; // displayNameがあればそれを使い、なければemailを使用
-        const message = `${userName} さんが以下のQRコードIDを損傷と判定しました: ${damagedIds.join(
-          ", "
-        )}`;
-        sendToDiscord(message); // Discordに通知を送信
-      } else {
-        console.error("ユーザーがログインしていません");
-      }
+      // 個別のQRコードIDとその状態を通知する
+      const message = [
+        `ユーザー: ${userName}`,
+        ...[1, 2, 3, 4].map((id) => {
+          const status = urls[id] === "損傷判定URL" ? "損傷" : "問題なし";
+          return `QRコードID${id}: ${status}`;
+        }),
+      ].join("\n");
+
+      sendToDiscord(message); // Discordに通知を送信
+    } else {
+      console.error("ユーザーがログインしていません");
     }
 
     window.open(firstUrl, "_blank");
