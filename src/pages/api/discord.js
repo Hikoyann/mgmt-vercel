@@ -28,6 +28,8 @@
 //   }
 // }
 
+
+// `pages/api/discord.js`
 export default async function handler(req, res) {
   if (req.method !== "POST") {
     return res.status(405).json({ error: "Method Not Allowed" });
@@ -45,18 +47,18 @@ export default async function handler(req, res) {
       content: `🛑 **備品削除リクエスト** 🛑\n\n**備品名:** ${equipmentName}\n**備品 ID:** ${id}\n\nこの備品を削除しますか？`,
       components: [
         {
-          type: 1,
+          type: 1, // アクション行 (Action Row)
           components: [
             {
-              type: 2,
+              type: 2, // ボタン (Button)
               label: "✅ 削除する",
-              style: 4, // 赤色
+              style: 4, // DANGER (赤)
               custom_id: `delete_${id}`,
             },
             {
-              type: 2,
+              type: 2, // ボタン (Button)
               label: "❌ キャンセル",
-              style: 2, // グレー
+              style: 2, // SECONDARY (グレー)
               custom_id: `cancel`,
             },
           ],
@@ -74,9 +76,7 @@ export default async function handler(req, res) {
       return res.status(500).json({ error: "Failed to send notification" });
     }
 
-    res
-      .status(200)
-      .json({ message: "削除リクエストを Discord に送信しました。" });
+    res.status(200).json({ message: "削除リクエストを Discord に送信しました。" });
   } catch (error) {
     console.error("Error sending notification:", error);
     res.status(500).json({ error: "Error sending notification" });

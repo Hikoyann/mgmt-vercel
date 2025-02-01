@@ -1,17 +1,21 @@
-import { Client, Intents } from "discord.js";
-import fetch from "node-fetch"; // ESM モジュール形式でのインポート
+// `bot.js`
+import { Client, GatewayIntentBits } from "discord.js";
+import fetch from "node-fetch";
 
-const client = new Client({ intents: [Intents.FLAGS.GUILDS] });
+const client = new Client({
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+  ],
+});
 
-// ボタンがクリックされた時の処理
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
 
   if (interaction.customId.startsWith("delete_")) {
-    // クリックされたボタンが削除ボタンの場合
-    const id = interaction.customId.split("_")[1]; // IDを取得
+    const id = interaction.customId.split("_")[1];
 
-    // Firebase の削除 API を呼び出す
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/delete-equipment`,
@@ -23,14 +27,7 @@ client.on("interactionCreate", async (interaction) => {
       );
 
       const data = await res.json();
-
       if (res.ok) {
-        // Discord へのリクエスト送信
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/discode`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id, equipmentName: data.equipmentName }), // equipmentNameも一緒に送信
-        });
         interaction.reply({
           content: "備品が削除されました。",
           ephemeral: true,
@@ -48,7 +45,6 @@ client.on("interactionCreate", async (interaction) => {
       });
     }
   } else if (interaction.customId === "cancel") {
-    // キャンセルボタンが押された場合
     interaction.reply({
       content: "削除がキャンセルされました。",
       ephemeral: true,
@@ -56,5 +52,4 @@ client.on("interactionCreate", async (interaction) => {
   }
 });
 
-// Discord Bot ログイン
 client.login(process.env.DISCORD_BOT_TOKEN);
