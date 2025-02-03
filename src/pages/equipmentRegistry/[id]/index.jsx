@@ -108,7 +108,7 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
     if (user) {
       const updatedInputs = {
         ...inputs,
-        name: `${user.displayName} (${inputs.name})`,
+        name: `${user.displayName}`,
         equipmentNum: mgmt.num,
         equipmentName: mgmt.equipmentName,
         photo: mgmt.photo,
@@ -299,7 +299,6 @@ const MgmtID = ({ mgmt, _equipments = {} }) => {
                     <div className="mt-2">
                       <h3>あなたが借りている備品情報</h3>
                       <div>備品番号: {borrowedItem.equipmentNum}</div>
-                      <div>学生番号: {borrowedItem.num}</div>
                       <div>備品番号: {borrowedItem.name}</div>
                       <div>備品名: {borrowedItem.equipmentName}</div>
                       <div>
